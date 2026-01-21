@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
+import Colors from '../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.background,
     paddingHorizontal: 24,
     paddingTop: 60,
     paddingBottom: 40,
@@ -12,29 +13,20 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginTop: 40,
   },
-  logoPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#4A90E2',
-    justifyContent: 'center',
-    alignItems: 'center',
+  logo: {
+    width: 180,
+    height: 120,
     marginBottom: 20,
-  },
-  logoText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#ffffff',
   },
   appName: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
     marginBottom: 8,
   },
   tagline: {
     fontSize: 16,
-    color: '#666666',
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
   featuresContainer: {
@@ -45,36 +37,43 @@ export default StyleSheet.create({
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundSecondary,
     padding: 16,
     borderRadius: 12,
     gap: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
   },
   featureIcon: {
     fontSize: 28,
   },
   featureText: {
     fontSize: 16,
-    color: '#333333',
+    color: Colors.textPrimary,
     fontWeight: '500',
   },
   buttonContainer: {
     gap: 16,
   },
   loginButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: Colors.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   loginButtonText: {
-    color: '#ffffff',
+    color: Colors.textWhite,
     fontSize: 18,
     fontWeight: '600',
   },
   footerText: {
     textAlign: 'center',
     fontSize: 12,
-    color: '#999999',
+    color: Colors.textMuted,
   },
 });

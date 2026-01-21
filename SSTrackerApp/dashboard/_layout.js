@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text, View } from 'react-native';
+import Colors from '../constants/colors';
 
 import DashboardHome from './pages/home';
 import DashboardTracking from './pages/tracking';
@@ -21,15 +22,15 @@ export default function DashboardLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          backgroundColor: Colors.background,
           borderTopWidth: 1,
-          borderTopColor: '#e0e0e0',
+          borderTopColor: Colors.border,
           paddingTop: 8,
           paddingBottom: 8,
           height: 70,
         },
-        tabBarActiveTintColor: '#4A90E2',
-        tabBarInactiveTintColor: '#999999',
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.textMuted,
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '500',

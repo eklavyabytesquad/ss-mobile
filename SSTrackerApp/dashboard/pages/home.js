@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { useAuth } from '../../navigation/NavigationManager';
+import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
 import styles from './styles/home.styles';
+import Colors from '../../constants/colors';
 
 export default function DashboardHome() {
   const { user } = useAuth();
@@ -10,20 +11,40 @@ export default function DashboardHome() {
     { label: 'Active Shipments', value: '12', icon: '📦' },
     { label: 'In Transit', value: '8', icon: '🚚' },
     { label: 'Delivered', value: '145', icon: '✅' },
-    { label: 'Pending', value: '4', icon: '⏳' },
+    { label: 'At Hub', value: '4', icon: '🏢' },
   ];
 
   const recentShipments = [
     { id: 'SHP001', destination: 'Mumbai', status: 'In Transit', date: '21 Jan 2026' },
     { id: 'SHP002', destination: 'Delhi', status: 'Delivered', date: '20 Jan 2026' },
-    { id: 'SHP003', destination: 'Bangalore', status: 'Pending', date: '21 Jan 2026' },
+    { id: 'SHP003', destination: 'Bangalore', status: 'Delayed', date: '21 Jan 2026' },
+    { id: 'SHP004', destination: 'Chennai', status: 'At Hub', date: '21 Jan 2026' },
   ];
+
+  const getStatusStyle = (status) => {
+    switch(status) {
+      case 'Delivered': return { bg: '#dcfce7', color: Colors.delivered };
+      case 'In Transit': return { bg: '#dbeafe', color: Colors.inTransit };
+      case 'Delayed': return { bg: '#fee2e2', color: Colors.delayed };
+      case 'At Hub': return { bg: '#fef3c7', color: Colors.atHub };
+      default: return { bg: '#f3f4f6', color: Colors.textSecondary };
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.greeting}>Hello!</Text>
-        <Text style={styles.phoneNumber}>+91 {user?.phoneNumber}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View>
+            <Text style={styles.greeting}>Hello!</Text>
+            <Text style={styles.phoneNumber}>+91 {user?.phoneNumber}</Text>
+          </View>
+          <Image 
+            source={require('../../assets/images/logo.png')} 
+            style={{ width: 60, height: 40 }}
+            resizeMode="contain"
+          />
+        </View>
       </View>
 
       <View style={styles.statsContainer}>
@@ -44,23 +65,21 @@ export default function DashboardHome() {
           </TouchableOpacity>
         </View>
 
-        {recentShipments.map((shipment, index) => (
-          <TouchableOpacity key={index} style={styles.shipmentCard}>
-            <View style={styles.shipmentInfo}>
-              <Text style={styles.shipmentId}>{shipment.id}</Text>
-              <Text style={styles.shipmentDestination}>To: {shipment.destination}</Text>
-              <Text style={styles.shipmentDate}>{shipment.date}</Text>
-            </View>
-            <View style={[
-              styles.statusBadge,
-              shipment.status === 'Delivered' && styles.statusDelivered,
-              shipment.status === 'In Transit' && styles.statusTransit,
-              shipment.status === 'Pending' && styles.statusPending,
-            ]}>
-              <Text style={styles.statusText}>{shipment.status}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+        {recentShipments.map((shipment, index) => {
+          const statusStyle = getStatusStyle(shipment.status);
+          return (
+            <TouchableOpacity key={index} style={styles.shipmentCard}>
+              <View style={styles.shipmentInfo}>
+                <Text style={styles.shipmentId}>{shipment.id}</Text>
+                <Text style={styles.shipmentDestination}>To: {shipment.destination}</Text>
+                <Text style={styles.shipmentDate}>{shipment.date}</Text>
+              </View>
+              <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+                <Text style={[styles.statusText, { color: statusStyle.color }]}>{shipment.status}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       <View style={styles.quickActions}>

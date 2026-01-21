@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useAuth } from '../../navigation/NavigationManager';
+import { useAuth } from '../../context/AuthContext';
 import styles from './styles/profile.styles';
 
 export default function DashboardProfile() {

@@ -1,12 +1,13 @@
 import { StyleSheet } from 'react-native';
+import Colors from '../../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundSecondary,
   },
   header: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: Colors.primary,
     paddingTop: 60,
     paddingBottom: 24,
     paddingHorizontal: 24,
@@ -14,7 +15,7 @@ export default StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.textWhite,
   },
   subtitle: {
     fontSize: 14,
@@ -28,34 +29,35 @@ export default StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    color: Colors.textPrimary,
   },
   searchButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: Colors.highlight,
     borderRadius: 12,
     paddingHorizontal: 24,
     justifyContent: 'center',
   },
   searchButtonText: {
-    color: '#ffffff',
+    color: Colors.textWhite,
     fontSize: 16,
     fontWeight: '600',
   },
   resultContainer: {
     margin: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -70,10 +72,10 @@ export default StyleSheet.create({
   resultId: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   statusBadge: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: '#dbeafe',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -81,13 +83,13 @@ export default StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#856404',
+    color: Colors.inTransit,
   },
   routeInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundSecondary,
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
@@ -97,33 +99,35 @@ export default StyleSheet.create({
   },
   routeLabel: {
     fontSize: 12,
-    color: '#666666',
+    color: Colors.textSecondary,
     marginBottom: 4,
   },
   routeValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   routeArrow: {
     fontSize: 24,
-    color: '#4A90E2',
+    color: Colors.primary,
     marginHorizontal: 16,
   },
   deliveryInfo: {
-    backgroundColor: '#e8f4fd',
+    backgroundColor: '#fef3c7',
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
   },
   deliveryLabel: {
     fontSize: 12,
-    color: '#4A90E2',
+    color: Colors.primaryDark,
   },
   deliveryDate: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
     marginTop: 4,
   },
   timeline: {
@@ -132,7 +136,7 @@ export default StyleSheet.create({
   timelineTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
     marginBottom: 16,
   },
   timelineItem: {
@@ -144,7 +148,7 @@ export default StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#4A90E2',
+    backgroundColor: Colors.primary,
     marginRight: 16,
     marginTop: 4,
   },
@@ -154,7 +158,7 @@ export default StyleSheet.create({
     top: 16,
     width: 2,
     height: 50,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: Colors.border,
   },
   timelineContent: {
     flex: 1,
@@ -162,16 +166,16 @@ export default StyleSheet.create({
   timelineStatus: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   timelineLocation: {
     fontSize: 13,
-    color: '#666666',
+    color: Colors.textSecondary,
     marginTop: 2,
   },
   timelineDate: {
     fontSize: 12,
-    color: '#999999',
+    color: Colors.textMuted,
     marginTop: 2,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { useAuth } from '../navigation/NavigationManager';
+import { useAuth } from '../context/AuthContext';
 import styles from './styles/login.styles';
 
 export default function LoginScreen({ navigation }) {

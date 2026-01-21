@@ -1,12 +1,13 @@
 import { StyleSheet } from 'react-native';
+import Colors from '../../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundSecondary,
   },
   header: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: Colors.primary,
     paddingTop: 60,
     paddingBottom: 30,
     alignItems: 'center',
@@ -15,7 +16,7 @@ export default StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -26,7 +27,7 @@ export default StyleSheet.create({
   userName: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.textWhite,
   },
   userPhone: {
     fontSize: 14,
@@ -35,12 +36,12 @@ export default StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     marginHorizontal: 16,
     marginTop: -20,
     borderRadius: 12,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -53,24 +54,24 @@ export default StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666666',
+    color: Colors.textSecondary,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: Colors.border,
   },
   menuContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     marginHorizontal: 16,
     marginTop: 20,
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -82,7 +83,7 @@ export default StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: Colors.backgroundSecondary,
   },
   menuIcon: {
     fontSize: 20,
@@ -91,28 +92,28 @@ export default StyleSheet.create({
   menuLabel: {
     flex: 1,
     fontSize: 16,
-    color: '#333333',
+    color: Colors.textPrimary,
   },
   menuArrow: {
     fontSize: 20,
-    color: '#999999',
+    color: Colors.textMuted,
   },
   logoutButton: {
     marginHorizontal: 16,
     marginTop: 20,
-    backgroundColor: '#ff4444',
+    backgroundColor: Colors.delayed,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
   logoutText: {
-    color: '#ffffff',
+    color: Colors.textWhite,
     fontSize: 16,
     fontWeight: '600',
   },
   versionText: {
     textAlign: 'center',
-    color: '#999999',
+    color: Colors.textMuted,
     fontSize: 12,
     marginTop: 20,
     marginBottom: 40,

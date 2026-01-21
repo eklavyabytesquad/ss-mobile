@@ -1,12 +1,13 @@
 import { StyleSheet } from 'react-native';
+import Colors from '../../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundSecondary,
   },
   header: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: Colors.primary,
     paddingTop: 60,
     paddingBottom: 24,
     paddingHorizontal: 24,
@@ -14,7 +15,7 @@ export default StyleSheet.create({
   greeting: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.textWhite,
   },
   phoneNumber: {
     fontSize: 14,
@@ -28,12 +29,12 @@ export default StyleSheet.create({
     gap: 12,
   },
   statCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 16,
     width: '47%',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -46,11 +47,11 @@ export default StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666666',
+    color: Colors.textSecondary,
     marginTop: 4,
     textAlign: 'center',
   },
@@ -67,22 +68,22 @@ export default StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   viewAllText: {
     fontSize: 14,
-    color: '#4A90E2',
+    color: Colors.primary,
     fontWeight: '500',
   },
   shipmentCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -94,37 +95,37 @@ export default StyleSheet.create({
   shipmentId: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   shipmentDestination: {
     fontSize: 14,
-    color: '#666666',
+    color: Colors.textSecondary,
     marginTop: 4,
   },
   shipmentDate: {
     fontSize: 12,
-    color: '#999999',
+    color: Colors.textMuted,
     marginTop: 2,
   },
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: Colors.border,
   },
   statusDelivered: {
-    backgroundColor: '#d4edda',
+    backgroundColor: '#dcfce7',
   },
   statusTransit: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: '#dbeafe',
   },
   statusPending: {
-    backgroundColor: '#f8d7da',
+    backgroundColor: '#fef3c7',
   },
   statusText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#333333',
+    color: Colors.textPrimary,
   },
   quickActions: {
     padding: 16,
@@ -137,16 +138,18 @@ export default StyleSheet.create({
     marginTop: 12,
   },
   actionButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 16,
     width: '47%',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   actionIcon: {
     fontSize: 24,
@@ -154,7 +157,7 @@ export default StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    color: '#333333',
+    color: Colors.textPrimary,
     fontWeight: '500',
   },
 });

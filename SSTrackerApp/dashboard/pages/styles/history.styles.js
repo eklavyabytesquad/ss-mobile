@@ -1,12 +1,13 @@
 import { StyleSheet } from 'react-native';
+import Colors from '../../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.backgroundSecondary,
   },
   header: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: Colors.primary,
     paddingTop: 60,
     paddingBottom: 24,
     paddingHorizontal: 24,
@@ -14,7 +15,7 @@ export default StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.textWhite,
   },
   subtitle: {
     fontSize: 14,
@@ -30,32 +31,32 @@ export default StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: Colors.border,
   },
   filterButtonActive: {
-    backgroundColor: '#4A90E2',
-    borderColor: '#4A90E2',
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   filterText: {
     fontSize: 14,
-    color: '#666666',
+    color: Colors.textSecondary,
     fontWeight: '500',
   },
   filterTextActive: {
-    color: '#ffffff',
+    color: Colors.textWhite,
   },
   listContainer: {
     flex: 1,
     paddingHorizontal: 16,
   },
   shipmentCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -70,12 +71,12 @@ export default StyleSheet.create({
   shipmentId: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   shipmentAmount: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4A90E2',
+    color: Colors.primary,
   },
   shipmentBody: {
     flexDirection: 'row',
@@ -86,12 +87,12 @@ export default StyleSheet.create({
   },
   shipmentLabel: {
     fontSize: 12,
-    color: '#999999',
+    color: Colors.textMuted,
     marginBottom: 2,
   },
   shipmentValue: {
     fontSize: 14,
-    color: '#333333',
+    color: Colors.textPrimary,
     fontWeight: '500',
   },
   statusBadge: {
@@ -99,23 +100,23 @@ export default StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: Colors.border,
   },
   statusDelivered: {
-    backgroundColor: '#d4edda',
+    backgroundColor: '#dcfce7',
   },
   statusCancelled: {
-    backgroundColor: '#f8d7da',
+    backgroundColor: '#fee2e2',
   },
   statusText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#333333',
+    color: Colors.textPrimary,
   },
   statusTextDelivered: {
-    color: '#155724',
+    color: Colors.delivered,
   },
   statusTextCancelled: {
-    color: '#721c24',
+    color: Colors.delayed,
   },
 });

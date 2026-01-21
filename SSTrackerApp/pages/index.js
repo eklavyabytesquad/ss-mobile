@@ -6,10 +6,12 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-        <View style={styles.logoPlaceholder}>
-          <Text style={styles.logoText}>SS</Text>
-        </View>
-        <Text style={styles.appName}>SS Tracker</Text>
+        <Image
+          source={require('../assets/images/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.appName}>SS Transport</Text>
         <Text style={styles.tagline}>Track your shipments with ease</Text>
       </View>
 
