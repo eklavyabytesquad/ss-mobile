@@ -41,17 +41,17 @@ export default function DashboardHome() {
           </View>
           <View style={{ 
             backgroundColor: Colors.background, 
-            padding: 8, 
-            borderRadius: 8,
+            padding: 10, 
+            borderRadius: 12,
             shadowColor: Colors.shadow,
             shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3,
+            shadowOpacity: 0.15,
+            shadowRadius: 6,
+            elevation: 4,
           }}>
             <Image 
               source={require('../../assets/images/logo.png')} 
-              style={{ width: 60, height: 40 }}
+              style={{ width: 100, height: 65 }}
               resizeMode="contain"
             />
           </View>
