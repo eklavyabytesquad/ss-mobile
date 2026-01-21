@@ -8,10 +8,10 @@ export default function DashboardHome() {
   const { user } = useAuth();
 
   const stats = [
-    { label: 'Active Shipments', value: '12', icon: '📦' },
-    { label: 'In Transit', value: '8', icon: '🚚' },
-    { label: 'Delivered', value: '145', icon: '✅' },
-    { label: 'At Hub', value: '4', icon: '🏢' },
+    { label: 'Active Shipments', value: '12', icon: require('../../assets/images/shipping-box.png'), isPng: true },
+    { label: 'In Transit', value: '8', icon: require('../../assets/images/truck.png'), isPng: true },
+    { label: 'Delivered', value: '145', icon: '✅', isPng: false },
+    { label: 'At Hub', value: '4', icon: require('../../assets/images/warehosue.png'), isPng: true },
   ];
 
   const recentShipments = [
@@ -39,18 +39,33 @@ export default function DashboardHome() {
             <Text style={styles.greeting}>Hello!</Text>
             <Text style={styles.phoneNumber}>+91 {user?.phoneNumber}</Text>
           </View>
-          <Image 
-            source={require('../../assets/images/logo.png')} 
-            style={{ width: 60, height: 40 }}
-            resizeMode="contain"
-          />
+          <View style={{ 
+            backgroundColor: Colors.background, 
+            padding: 8, 
+            borderRadius: 8,
+            shadowColor: Colors.shadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+          }}>
+            <Image 
+              source={require('../../assets/images/logo.png')} 
+              style={{ width: 60, height: 40 }}
+              resizeMode="contain"
+            />
+          </View>
         </View>
       </View>
 
       <View style={styles.statsContainer}>
         {stats.map((stat, index) => (
           <View key={index} style={styles.statCard}>
-            <Text style={styles.statIcon}>{stat.icon}</Text>
+            {stat.isPng ? (
+              <Image source={stat.icon} style={{ width: 32, height: 32, tintColor: Colors.primary, marginBottom: 8 }} />
+            ) : (
+              <Text style={styles.statIcon}>{stat.icon}</Text>
+            )}
             <Text style={styles.statValue}>{stat.value}</Text>
             <Text style={styles.statLabel}>{stat.label}</Text>
           </View>

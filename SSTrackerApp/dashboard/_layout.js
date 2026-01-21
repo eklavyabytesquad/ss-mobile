@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, View } from 'react-native';
+import { Image } from 'react-native';
 import Colors from '../constants/colors';
 
 import DashboardHome from './pages/home';
@@ -9,12 +9,6 @@ import DashboardHistory from './pages/history';
 import DashboardProfile from './pages/profile';
 
 const Tab = createBottomTabNavigator();
-
-const TabIcon = ({ name, focused }) => (
-  <View style={{ alignItems: 'center' }}>
-    <Text style={{ fontSize: 24 }}>{name}</Text>
-  </View>
-);
 
 export default function DashboardLayout() {
   return (
@@ -43,7 +37,16 @@ export default function DashboardLayout() {
         component={DashboardHome}
         options={{
           title: 'Home',
-          tabBarIcon: ({ focused }) => <TabIcon name="🏠" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require('../assets/images/home.png')}
+              style={{ 
+                width: 28, 
+                height: 28,
+                tintColor: focused ? Colors.primary : Colors.textMuted 
+              }}
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -51,7 +54,16 @@ export default function DashboardLayout() {
         component={DashboardTracking}
         options={{
           title: 'Tracking',
-          tabBarIcon: ({ focused }) => <TabIcon name="📍" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require('../assets/images/tracking.png')}
+              style={{ 
+                width: 28, 
+                height: 28,
+                tintColor: focused ? Colors.primary : Colors.textMuted 
+              }}
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -59,7 +71,16 @@ export default function DashboardLayout() {
         component={DashboardHistory}
         options={{
           title: 'History',
-          tabBarIcon: ({ focused }) => <TabIcon name="📋" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require('../assets/images/list.png')}
+              style={{ 
+                width: 28, 
+                height: 28,
+                tintColor: focused ? Colors.primary : Colors.textMuted 
+              }}
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -67,7 +88,16 @@ export default function DashboardLayout() {
         component={DashboardProfile}
         options={{
           title: 'Profile',
-          tabBarIcon: ({ focused }) => <TabIcon name="👤" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require('../assets/images/profile.png')}
+              style={{ 
+                width: 28, 
+                height: 28,
+                tintColor: focused ? Colors.primary : Colors.textMuted 
+              }}
+            />
+          ),
         }}
       />
     </Tab.Navigator>
