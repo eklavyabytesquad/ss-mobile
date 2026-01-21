@@ -41,7 +41,7 @@ export default function DashboardHistory() {
         ))}
       </View>
 
-      <ScrollView style={styles.listContainer}>
+      <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
         {filteredShipments.map((shipment, index) => (
           <TouchableOpacity key={index} style={styles.shipmentCard}>
             <View style={styles.shipmentHeader}>

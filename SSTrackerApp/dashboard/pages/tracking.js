@@ -66,7 +66,7 @@ export default function DashboardTracking() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <Text style={styles.title}>SS Tracker</Text>
         <Text style={styles.subtitle}>Enter tracking ID to get live updates</Text>
