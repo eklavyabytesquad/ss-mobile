@@ -1,80 +1,45 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '../components/hello-wave';
-import ParallaxScrollView from '../components/parallax-scroll-view';
-import { ThemedText } from '../components/themed-text';
-import { ThemedView } from '../components/themed-view';
+import React from 'react';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
+import styles from './styles/index.styles';
 
 export default function HomeScreen({ navigation }) {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#a737fc' }}
-      headerImage={
-        <Image
-          source={require('../assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Hi Eklavya</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">pages/index.js</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText 
-          type="subtitle" 
-          onPress={() => navigation.navigate('modal')}
-          style={{ textDecorationLine: 'underline' }}>
-          Step 2: Explore
-        </ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <View style={styles.logoContainer}>
+        <View style={styles.logoPlaceholder}>
+          <Text style={styles.logoText}>SS</Text>
+        </View>
+        <Text style={styles.appName}>SS Tracker</Text>
+        <Text style={styles.tagline}>Track your shipments with ease</Text>
+      </View>
+
+      <View style={styles.featuresContainer}>
+        <View style={styles.featureItem}>
+          <Text style={styles.featureIcon}>📍</Text>
+          <Text style={styles.featureText}>Real-time Tracking</Text>
+        </View>
+        <View style={styles.featureItem}>
+          <Text style={styles.featureIcon}>🚚</Text>
+          <Text style={styles.featureText}>Fleet Management</Text>
+        </View>
+        <View style={styles.featureItem}>
+          <Text style={styles.featureIcon}>📊</Text>
+          <Text style={styles.featureText}>Analytics Dashboard</Text>
+        </View>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.loginButton}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <Text style={styles.loginButtonText}>Login with Phone</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.footerText}>
+          By continuing, you agree to our Terms & Privacy Policy
+        </Text>
+      </View>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

@@ -1,0 +1,177 @@
+import { StyleSheet } from 'react-native';
+
+export default StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  header: {
+    backgroundColor: '#4A90E2',
+    paddingTop: 60,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 4,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 12,
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  searchButton: {
+    backgroundColor: '#4A90E2',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+  },
+  searchButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  resultContainer: {
+    margin: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  resultId: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+  },
+  statusBadge: {
+    backgroundColor: '#fff3cd',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#856404',
+  },
+  routeInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  routePoint: {
+    flex: 1,
+  },
+  routeLabel: {
+    fontSize: 12,
+    color: '#666666',
+    marginBottom: 4,
+  },
+  routeValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  routeArrow: {
+    fontSize: 24,
+    color: '#4A90E2',
+    marginHorizontal: 16,
+  },
+  deliveryInfo: {
+    backgroundColor: '#e8f4fd',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  deliveryLabel: {
+    fontSize: 12,
+    color: '#4A90E2',
+  },
+  deliveryDate: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginTop: 4,
+  },
+  timeline: {
+    marginTop: 8,
+  },
+  timelineTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 16,
+  },
+  timelineItem: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    position: 'relative',
+  },
+  timelineDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#4A90E2',
+    marginRight: 16,
+    marginTop: 4,
+  },
+  timelineLine: {
+    position: 'absolute',
+    left: 5,
+    top: 16,
+    width: 2,
+    height: 50,
+    backgroundColor: '#e0e0e0',
+  },
+  timelineContent: {
+    flex: 1,
+  },
+  timelineStatus: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  timelineLocation: {
+    fontSize: 13,
+    color: '#666666',
+    marginTop: 2,
+  },
+  timelineDate: {
+    fontSize: 12,
+    color: '#999999',
+    marginTop: 2,
+  },
+});
