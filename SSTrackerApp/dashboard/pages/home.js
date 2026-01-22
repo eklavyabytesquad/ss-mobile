@@ -146,13 +146,13 @@ export default function DashboardHome() {
         <>
           <View style={styles.statsContainer}>
             {statsData.map((stat, index) => (
-              <View key={index} style={[styles.statCard, { borderTopWidth: 3, borderTopColor: stat.color || Colors.primary }]}>
+              <View key={index} style={[styles.statCard, { borderTopWidth: 3, borderTopColor: Colors.primary }]}>
                 {stat.isPng ? (
-                  <Image source={stat.icon} style={{ width: 32, height: 32, tintColor: stat.color || Colors.primary, marginBottom: 8 }} />
+                  <Image source={stat.icon} style={{ width: 32, height: 32, tintColor: Colors.primary, marginBottom: 8 }} />
                 ) : (
                   <Text style={styles.statIcon}>{stat.icon}</Text>
                 )}
-                <Text style={[styles.statValue, { color: stat.color || Colors.primary }]}>{stat.value}</Text>
+                <Text style={[styles.statValue, { color: Colors.primary }]}>{stat.value}</Text>
                 <Text style={styles.statLabel}>{stat.label}</Text>
               </View>
             ))}
