@@ -95,10 +95,10 @@ export default function DashboardLayout() {
         name="CityRates"
         component={CityRates}
         options={{
-          title: 'City & Rates',
+          title: 'Pricing',
           tabBarIcon: ({ focused }) => (
             <Image
-              source={require('../assets/images/warehosue.png')}
+              source={require('../assets/images/rates.png')}
               style={{ 
                 width: 28, 
                 height: 28,

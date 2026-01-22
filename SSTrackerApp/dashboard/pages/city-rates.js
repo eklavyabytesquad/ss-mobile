@@ -116,36 +116,52 @@ export default function CityRates() {
         contentContainerStyle={{ paddingBottom: 100 }}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Contact Support Banner */}
+        <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
+          <View style={{
+            backgroundColor: '#fef3c7',
+            borderRadius: 12,
+            padding: 14,
+            borderLeftWidth: 4,
+            borderLeftColor: Colors.primary,
+          }}>
+            <Text style={{ fontSize: 13, color: '#92400e', textAlign: 'center', lineHeight: 20 }}>
+              📞 <Text style={{ fontWeight: '700' }}>Contact Support</Text> to order in bulk and get discounted rates
+            </Text>
+          </View>
+        </View>
+
         {/* Search Box */}
-        <View style={{ padding: 20 }}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 }}>
           <View style={{
             backgroundColor: '#fff',
             borderRadius: 16,
-            padding: 16,
+            padding: 20,
             shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 4,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.12,
+            shadowRadius: 12,
+            elevation: 6,
           }}>
-            <Text style={{ fontSize: 14, fontWeight: '600', color: '#1f2937', marginBottom: 12 }}>
-              🔍 Search City
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#1f2937', marginBottom: 14 }}>
+              🔍 Search City for Rates
             </Text>
             
             <View style={{ position: 'relative' }}>
               <TextInput
                 style={{
                   backgroundColor: '#f9fafb',
-                  borderRadius: 12,
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
-                  fontSize: 15,
+                  borderRadius: 14,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  fontSize: 16,
                   color: '#1f2937',
-                  borderWidth: 1,
+                  borderWidth: 2,
                   borderColor: '#e5e7eb',
-                  paddingRight: 40,
+                  paddingRight: 45,
+                  fontWeight: '500',
                 }}
-                placeholder="Enter city name or code"
+                placeholder="Search city name or code..."
                 placeholderTextColor="#9ca3af"
                 value={searchQuery}
                 onChangeText={handleSearch}
@@ -155,19 +171,20 @@ export default function CityRates() {
                 <TouchableOpacity
                   style={{
                     position: 'absolute',
-                    right: 10,
+                    right: 12,
                     top: '50%',
-                    transform: [{ translateY: -10 }],
-                    width: 24,
-                    height: 24,
-                    borderRadius: 12,
-                    backgroundColor: '#e5e7eb',
+                    transform: [{ translateY: -12 }],
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: Colors.primary,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                   onPress={clearSearch}
+                  activeOpacity={0.8}
                 >
-                  <Text style={{ color: '#6b7280', fontSize: 14, fontWeight: 'bold' }}>✕</Text>
+                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>✕</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -181,27 +198,27 @@ export default function CityRates() {
             {/* City Results Dropdown */}
             {cities.length > 0 && (
               <View style={{
-                marginTop: 12,
+                marginTop: 16,
                 backgroundColor: '#fff',
-                borderRadius: 12,
-                maxHeight: 250,
-                borderWidth: 1,
+                borderRadius: 14,
+                maxHeight: 280,
+                borderWidth: 2,
                 borderColor: Colors.primary,
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 5,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 8,
+                elevation: 8,
               }}>
                 <View style={{
                   backgroundColor: Colors.primary,
-                  paddingVertical: 8,
-                  paddingHorizontal: 12,
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
                   borderTopLeftRadius: 12,
                   borderTopRightRadius: 12,
                 }}>
-                  <Text style={{ fontSize: 12, color: '#fff', fontWeight: '600' }}>
-                    📍 {cities.length} {cities.length === 1 ? 'city' : 'cities'} found
+                  <Text style={{ fontSize: 13, color: '#fff', fontWeight: '700' }}>
+                    📍 {cities.length} {cities.length === 1 ? 'City' : 'Cities'} Found
                   </Text>
                 </View>
                 <ScrollView nestedScrollEnabled>
@@ -209,24 +226,33 @@ export default function CityRates() {
                     <TouchableOpacity
                       key={city.id}
                       style={{
-                        padding: 14,
+                        padding: 16,
                         borderBottomWidth: index < cities.length - 1 ? 1 : 0,
                         borderBottomColor: '#f3f4f6',
-                        backgroundColor: '#fff',
+                        backgroundColor: index % 2 === 0 ? '#fff' : '#fefefe',
                       }}
                       onPress={() => selectCity(city)}
                       activeOpacity={0.7}
                     >
                       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                         <View style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 16, fontWeight: '600', color: '#1f2937', marginBottom: 2 }}>
+                          <Text style={{ fontSize: 17, fontWeight: '700', color: '#1f2937', marginBottom: 3 }}>
                             {city.city_name}
                           </Text>
-                          <Text style={{ fontSize: 12, color: '#6b7280' }}>
+                          <Text style={{ fontSize: 13, color: '#6b7280', fontWeight: '500' }}>
                             Code: {city.city_code}
                           </Text>
                         </View>
-                        <Text style={{ fontSize: 20, color: Colors.primary }}>→</Text>
+                        <View style={{
+                          backgroundColor: Colors.primary,
+                          width: 32,
+                          height: 32,
+                          borderRadius: 16,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                          <Text style={{ fontSize: 18, color: '#fff' }}>→</Text>
+                        </View>
                       </View>
                     </TouchableOpacity>
                   ))}
