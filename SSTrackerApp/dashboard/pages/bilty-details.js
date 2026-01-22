@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Share, Alert } from 'react-native';
 import { fetchBiltyById, fetchBiltyByGR } from '../../utils/biltyService';
+import { BiltyPdfGenerator } from '../../printing';
 import Colors from '../../constants/colors';
 
 export default function BiltyDetails({ route, navigation }) {
   const { biltyId, grNo } = route.params || {};
   const [bilty, setBilty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   useEffect(() => {
     loadBiltyDetails();
@@ -114,6 +116,9 @@ export default function BiltyDetails({ route, navigation }) {
             <Text style={{ fontSize: 24, color: '#fff' }}>←</Text>
           </TouchableOpacity>
           <Text style={{ fontSize: 20, fontWeight: '700', color: '#fff', flex: 1 }}>Bilty Details</Text>
+          <TouchableOpacity onPress={() => setShowPrintModal(true)} style={{ marginRight: 12 }}>
+            <Text style={{ fontSize: 20, color: '#fff' }}>🖨️</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={handleShare}>
             <Text style={{ fontSize: 20, color: '#fff' }}>📤</Text>
           </TouchableOpacity>
@@ -261,6 +266,14 @@ export default function BiltyDetails({ route, navigation }) {
 
         <View style={{ height: 30 }} />
       </ScrollView>
+
+      {/* Print Modal */}
+      <BiltyPdfGenerator
+        visible={showPrintModal}
+        biltyData={bilty}
+        grNo={bilty?.gr_no}
+        onClose={() => setShowPrintModal(false)}
+      />
     </View>
   );
 }

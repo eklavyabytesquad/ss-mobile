@@ -252,9 +252,9 @@ export default function DashboardHome() {
           <View style={styles.quickActions}>
             <Text style={styles.sectionTitle}>Quick Actions</Text>
             <View style={styles.actionsGrid}>
-              <TouchableOpacity style={styles.actionButton}>
-                <Text style={styles.actionIcon}>➕</Text>
-                <Text style={styles.actionText}>New Shipment</Text>
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.getParent()?.navigate('PrintBilty')}>
+                <Text style={styles.actionIcon}>🖨️</Text>
+                <Text style={styles.actionText}>Print Bilty</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.actionButton} onPress={() => navigation?.navigate('Tracking')}>
                 <Text style={styles.actionIcon}>🔍</Text>
@@ -264,9 +264,9 @@ export default function DashboardHome() {
                 <Text style={styles.actionIcon}>📞</Text>
                 <Text style={styles.actionText}>Support</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton}>
-                <Text style={styles.actionIcon}>📄</Text>
-                <Text style={styles.actionText}>Reports</Text>
+              <TouchableOpacity style={styles.actionButton} onPress={() => navigation?.navigate('CityRates')}>
+                <Text style={styles.actionIcon}>💰</Text>
+                <Text style={styles.actionText}>Rates</Text>
               </TouchableOpacity>
             </View>
           </View>
