@@ -105,6 +105,12 @@ export default StyleSheet.create({
   statusDelivered: {
     backgroundColor: '#dcfce7',
   },
+  statusInTransit: {
+    backgroundColor: '#dbeafe',
+  },
+  statusAtHub: {
+    backgroundColor: '#fef3c7',
+  },
   statusCancelled: {
     backgroundColor: '#fee2e2',
   },
@@ -115,6 +121,12 @@ export default StyleSheet.create({
   },
   statusTextDelivered: {
     color: Colors.delivered,
+  },
+  statusTextInTransit: {
+    color: Colors.inTransit,
+  },
+  statusTextAtHub: {
+    color: Colors.atHub,
   },
   statusTextCancelled: {
     color: Colors.delayed,

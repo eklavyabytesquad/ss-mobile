@@ -1,95 +1,227 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, Image, StatusBar } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
+import { requestOTP, verifyOTP } from '../utils/authService';
 import styles from './styles/login.styles';
+import Colors from '../constants/colors';
 
 export default function LoginScreen({ navigation }) {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [showOtp, setShowOtp] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [companyName, setCompanyName] = useState('');
   const { login } = useAuth();
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     if (phoneNumber.length < 10) {
       Alert.alert('Error', 'Please enter a valid phone number');
       return;
     }
-    // Dummy OTP send
-    setShowOtp(true);
-    Alert.alert('OTP Sent', 'Use 123456 as OTP for demo');
+    
+    setIsLoading(true);
+    try {
+      const result = await requestOTP(phoneNumber);
+      
+      if (result.success) {
+        setShowOtp(true);
+        setCompanyName(result.companyName || '');
+        Alert.alert('OTP Sent', 'OTP has been sent to your WhatsApp');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to send OTP');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleVerifyOtp = () => {
-    // Dummy OTP verification
-    if (otp === '123456') {
-      login(phoneNumber);
-    } else {
-      Alert.alert('Error', 'Invalid OTP. Use 123456 for demo');
+  const handleVerifyOtp = async () => {
+    if (otp.length !== 6) {
+      Alert.alert('Error', 'Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await verifyOTP(phoneNumber, otp);
+      
+      if (result.success) {
+        await login(result.user, result.sessionToken);
+      } else {
+        Alert.alert('Error', result.error || 'Invalid OTP');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setIsLoading(true);
+    try {
+      const result = await requestOTP(phoneNumber);
+      
+      if (result.success) {
+        Alert.alert('OTP Resent', 'New OTP has been sent to your WhatsApp');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to resend OTP');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <KeyboardAvoidingView 
-      style={styles.container}
+      style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <TouchableOpacity 
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
+      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+      <ScrollView 
+        style={styles.container}
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.backButtonText}>← Back</Text>
-      </TouchableOpacity>
+        {/* Header with gradient background */}
+        <LinearGradient
+          colors={[Colors.primary, '#b8922e', Colors.primary]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.header}
+        >
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Login</Text>
-        <Text style={styles.subtitle}>Enter your phone number to continue</Text>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={styles.logoBackground}>
+              <Image 
+                source={require('../assets/images/logo.png')} 
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={styles.appTitle}>SS Tracker</Text>
+            <Text style={styles.tagline}>Track Your Shipments</Text>
+          </View>
+        </LinearGradient>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Phone Number</Text>
-          <View style={styles.phoneInputWrapper}>
-            <Text style={styles.countryCode}>+91</Text>
-            <TextInput
-              style={styles.phoneInput}
-              placeholder="Enter phone number"
-              keyboardType="phone-pad"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              maxLength={10}
-              editable={!showOtp}
-            />
+        {/* Form Content */}
+        <View style={styles.formContainer}>
+          <View style={styles.formCard}>
+            <Text style={styles.title}>{showOtp ? 'Verify OTP' : 'Welcome Back'}</Text>
+            <Text style={styles.subtitle}>
+              {showOtp ? 'Enter the OTP sent to your WhatsApp' : 'Login to continue tracking your shipments'}
+            </Text>
+
+            {companyName ? (
+              <View style={styles.welcomeBadge}>
+                <Text style={styles.welcomeIcon}>👋</Text>
+                <Text style={styles.welcomeText}>Welcome, {companyName}!</Text>
+              </View>
+            ) : null}
+
+            {/* Phone Input */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Phone Number</Text>
+              <View style={[styles.phoneInputWrapper, !showOtp && styles.inputActive]}>
+                <View style={styles.countryCodeContainer}>
+                  <Text style={styles.countryCode}>🇮🇳 +91</Text>
+                </View>
+                <TextInput
+                  style={styles.phoneInput}
+                  placeholder="Enter mobile number"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="phone-pad"
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  maxLength={10}
+                  editable={!showOtp}
+                />
+              </View>
+            </View>
+
+            {/* OTP Input */}
+            {showOtp && (
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>🔐 Enter OTP</Text>
+                <TextInput
+                  style={[styles.otpInput, styles.inputActive]}
+                  placeholder="• • • • • •"
+                  placeholderTextColor="#d1d5db"
+                  keyboardType="number-pad"
+                  value={otp}
+                  onChangeText={setOtp}
+                  maxLength={6}
+                />
+                <View style={styles.otpActions}>
+                  <Text style={styles.otpHint}>Sent via WhatsApp</Text>
+                  <TouchableOpacity onPress={handleResendOtp} disabled={isLoading}>
+                    <Text style={styles.resendText}>🔄 Resend</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+              onPress={showOtp ? handleVerifyOtp : handleSendOtp}
+              disabled={isLoading}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={[Colors.primary, '#b8922e']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.buttonGradient}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <View style={styles.buttonContent}>
+                    <Text style={styles.submitButtonText}>
+                      {showOtp ? 'Verify OTP' : 'Send OTP'}
+                    </Text>
+                    <Text style={styles.buttonArrow}>→</Text>
+                  </View>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Change Number */}
+            {showOtp && (
+              <TouchableOpacity 
+                style={styles.changeNumberButton}
+                onPress={() => {
+                  setShowOtp(false);
+                  setOtp('');
+                  setCompanyName('');
+                }}
+              >
+                <Text style={styles.changeNumberText}>← Change Phone Number</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Security Badge */}
+            <View style={styles.securityBadge}>
+              <Text style={styles.securityIcon}>🔒</Text>
+              <Text style={styles.securityText}>Secure Login • End-to-End Encrypted</Text>
+            </View>
           </View>
         </View>
-
-        {showOtp && (
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>OTP</Text>
-            <TextInput
-              style={styles.otpInput}
-              placeholder="Enter 6-digit OTP"
-              keyboardType="number-pad"
-              value={otp}
-              onChangeText={setOtp}
-              maxLength={6}
-            />
-            <TouchableOpacity onPress={() => Alert.alert('OTP Resent', 'Use 123456')}>
-              <Text style={styles.resendText}>Resend OTP</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={showOtp ? handleVerifyOtp : handleSendOtp}
-        >
-          <Text style={styles.submitButtonText}>
-            {showOtp ? 'Verify OTP' : 'Send OTP'}
-          </Text>
-        </TouchableOpacity>
-
-        <Text style={styles.demoText}>
-          Demo: Use any 10-digit number and OTP: 123456
-        </Text>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

@@ -229,6 +229,29 @@ export default StyleSheet.create({
     color: Colors.textMuted,
     marginTop: 2,
   },
+  detailsSection: {
+    marginTop: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    flex: 1,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: Colors.textPrimary,
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'right',
+  },
   scannerContainer: {
     flex: 1,
     backgroundColor: Colors.dark,

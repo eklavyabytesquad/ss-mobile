@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Alert, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Alert, Image, ActivityIndicator } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { fetchBiltyByGR } from '../../utils/biltyService';
+import Colors from '../../constants/colors';
 import styles from './styles/tracking.styles';
 
 export default function DashboardTracking() {
@@ -9,6 +11,7 @@ export default function DashboardTracking() {
   const [showScanner, setShowScanner] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBarcodeScanned = ({ data }) => {
     if (!scanned) {
@@ -46,22 +49,58 @@ export default function DashboardTracking() {
     setShowScanner(true);
   };
 
-  const handleTrack = (id = trackingId) => {
-    // Dummy tracking result
-    if (id) {
-      setTrackingResult({
-        id: id,
-        status: 'In Transit',
-        origin: 'Chennai',
-        destination: 'Mumbai',
-        estimatedDelivery: '23 Jan 2026',
-        timeline: [
-          { date: '21 Jan, 10:00 AM', status: 'In Transit', location: 'Hyderabad Hub' },
-          { date: '20 Jan, 6:00 PM', status: 'Departed', location: 'Chennai Hub' },
-          { date: '20 Jan, 2:00 PM', status: 'Picked Up', location: 'Chennai' },
-          { date: '20 Jan, 10:00 AM', status: 'Order Placed', location: 'Chennai' },
-        ],
-      });
+  const getStatusFromSavingOption = (savingOption) => {
+    switch(savingOption) {
+      case 'DELIVERED': return 'Delivered';
+      case 'IN_TRANSIT': return 'In Transit';
+      case 'AT_HUB': return 'At Hub';
+      case 'SAVE': return 'In Transit';
+      default: return 'Pending';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const handleTrack = async (id = trackingId) => {
+    if (!id) {
+      Alert.alert('Error', 'Please enter a tracking ID');
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const result = await fetchBiltyByGR(id);
+      
+      if (result.success && result.data) {
+        const bilty = result.data;
+        setTrackingResult({
+          id: bilty.gr_no,
+          status: getStatusFromSavingOption(bilty.saving_option),
+          origin: bilty.from_city_name || 'N/A',
+          destination: bilty.to_city_name || 'N/A',
+          consignor: bilty.consignor_name,
+          consignee: bilty.consignee_name,
+          biltyDate: formatDate(bilty.bilty_date),
+          packages: bilty.no_of_pkg,
+          weight: bilty.wt,
+          total: bilty.total,
+          invoiceNo: bilty.invoice_no,
+          eWayBill: bilty.e_way_bill,
+          paymentMode: bilty.payment_mode,
+          remark: bilty.remark,
+        });
+      } else {
+        Alert.alert('Not Found', 'No shipment found with this tracking ID');
+        setTrackingResult(null);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch tracking details');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,9 +131,17 @@ export default function DashboardTracking() {
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity style={styles.searchButton} onPress={() => handleTrack()}>
+        <TouchableOpacity 
+        style={[styles.searchButton, isLoading && { opacity: 0.7 }]} 
+        onPress={() => handleTrack()}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
           <Text style={styles.searchButtonText}>Track</Text>
-        </TouchableOpacity>
+        )}
+      </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.scanCapsule} onPress={openScanner}>
@@ -109,8 +156,16 @@ export default function DashboardTracking() {
         <View style={styles.resultContainer}>
           <View style={styles.resultHeader}>
             <Text style={styles.resultId}>{trackingResult.id}</Text>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>{trackingResult.status}</Text>
+            <View style={[
+              styles.statusBadge, 
+              { backgroundColor: trackingResult.status === 'Delivered' ? '#dcfce7' : 
+                               trackingResult.status === 'In Transit' ? '#dbeafe' : '#fef3c7' }
+            ]}>
+              <Text style={[
+                styles.statusText,
+                { color: trackingResult.status === 'Delivered' ? Colors.delivered : 
+                        trackingResult.status === 'In Transit' ? Colors.inTransit : Colors.atHub }
+              ]}>{trackingResult.status}</Text>
             </View>
           </View>
 
@@ -127,25 +182,61 @@ export default function DashboardTracking() {
           </View>
 
           <View style={styles.deliveryInfo}>
-            <Text style={styles.deliveryLabel}>Estimated Delivery</Text>
-            <Text style={styles.deliveryDate}>{trackingResult.estimatedDelivery}</Text>
+            <Text style={styles.deliveryLabel}>Bilty Date</Text>
+            <Text style={styles.deliveryDate}>{trackingResult.biltyDate}</Text>
           </View>
 
-          <View style={styles.timeline}>
-            <Text style={styles.timelineTitle}>Tracking History</Text>
-            {trackingResult.timeline.map((item, index) => (
-              <View key={index} style={styles.timelineItem}>
-                <View style={styles.timelineDot} />
-                {index < trackingResult.timeline.length - 1 && (
-                  <View style={styles.timelineLine} />
-                )}
-                <View style={styles.timelineContent}>
-                  <Text style={styles.timelineStatus}>{item.status}</Text>
-                  <Text style={styles.timelineLocation}>{item.location}</Text>
-                  <Text style={styles.timelineDate}>{item.date}</Text>
-                </View>
+          <View style={styles.detailsSection}>
+            <Text style={styles.timelineTitle}>Shipment Details</Text>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Consignor</Text>
+              <Text style={styles.detailValue}>{trackingResult.consignor || 'N/A'}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Consignee</Text>
+              <Text style={styles.detailValue}>{trackingResult.consignee || 'N/A'}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>No. of Packages</Text>
+              <Text style={styles.detailValue}>{trackingResult.packages || '0'}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Weight</Text>
+              <Text style={styles.detailValue}>{trackingResult.weight ? `${trackingResult.weight} kg` : 'N/A'}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Invoice No</Text>
+              <Text style={styles.detailValue}>{trackingResult.invoiceNo || 'N/A'}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>E-Way Bill</Text>
+              <Text style={styles.detailValue}>{trackingResult.eWayBill || 'N/A'}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Payment Mode</Text>
+              <Text style={styles.detailValue}>{trackingResult.paymentMode || 'N/A'}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Total Amount</Text>
+              <Text style={[styles.detailValue, { color: Colors.primary, fontWeight: 'bold' }]}>
+                ₹{trackingResult.total || '0'}
+              </Text>
+            </View>
+
+            {trackingResult.remark && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Remark</Text>
+                <Text style={styles.detailValue}>{trackingResult.remark}</Text>
               </View>
-            ))}
+            )}
           </View>
         </View>
       )}

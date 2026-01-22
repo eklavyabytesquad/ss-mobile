@@ -1,30 +1,89 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../context/AuthContext';
+import { searchBilty } from '../../utils/biltyService';
+import Colors from '../../constants/colors';
 import styles from './styles/history.styles';
 
 export default function DashboardHistory() {
+  const navigation = useNavigation();
+  const { user } = useAuth();
   const [filter, setFilter] = useState('all');
+  const [shipments, setShipments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const shipments = [
-    { id: 'SHP001', destination: 'Mumbai', status: 'Delivered', date: '20 Jan 2026', amount: '₹2,500' },
-    { id: 'SHP002', destination: 'Delhi', status: 'Delivered', date: '18 Jan 2026', amount: '₹3,200' },
-    { id: 'SHP003', destination: 'Bangalore', status: 'Cancelled', date: '15 Jan 2026', amount: '₹1,800' },
-    { id: 'SHP004', destination: 'Kolkata', status: 'Delivered', date: '12 Jan 2026', amount: '₹4,100' },
-    { id: 'SHP005', destination: 'Hyderabad', status: 'Delivered', date: '10 Jan 2026', amount: '₹2,900' },
-    { id: 'SHP006', destination: 'Pune', status: 'Cancelled', date: '8 Jan 2026', amount: '₹1,500' },
-  ];
+  useEffect(() => {
+    if (user) {
+      loadShipments();
+    }
+  }, [user, filter]);
 
-  const filteredShipments = filter === 'all' 
-    ? shipments 
-    : shipments.filter(s => s.status.toLowerCase() === filter);
+  const loadShipments = async () => {
+    setIsLoading(true);
+    try {
+      const statusFilter = filter === 'all' ? null : 
+                          filter === 'delivered' ? 'DELIVERED' : 
+                          filter === 'in_transit' ? 'SAVE' : null;
+      
+      const result = await searchBilty(user, { 
+        status: statusFilter,
+        pageSize: 50 
+      });
+      
+      if (result.success) {
+        setShipments(result.data);
+      }
+    } catch (error) {
+      console.error('Load shipments error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const filters = ['all', 'delivered', 'cancelled'];
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadShipments();
+    setRefreshing(false);
+  };
+
+  const getStatusFromSavingOption = (savingOption) => {
+    switch(savingOption) {
+      case 'DELIVERED': return 'Delivered';
+      case 'IN_TRANSIT': return 'In Transit';
+      case 'AT_HUB': return 'At Hub';
+      case 'SAVE': return 'In Transit';
+      default: return 'Pending';
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    switch(status) {
+      case 'Delivered': return { bg: '#dcfce7', color: '#166534' };
+      case 'In Transit': return { bg: '#dbeafe', color: '#1e40af' };
+      case 'At Hub': return { bg: '#fef3c7', color: '#92400e' };
+      default: return { bg: '#f3f4f6', color: '#6b7280' };
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const filters = ['all', 'delivered', 'in_transit'];
+
+  const navigateToBiltyDetails = (bilty) => {
+    navigation.getParent()?.navigate('BiltyDetails', { biltyId: bilty.id, grNo: bilty.gr_no });
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Shipment History</Text>
-        <Text style={styles.subtitle}>View all your past shipments</Text>
+        <Text style={styles.subtitle}>View all your shipments</Text>
       </View>
 
       <View style={styles.filterContainer}>
@@ -35,45 +94,112 @@ export default function DashboardHistory() {
             onPress={() => setFilter(f)}
           >
             <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
-              {f.charAt(0).toUpperCase() + f.slice(1)}
+              {f === 'in_transit' ? 'In Transit' : f.charAt(0).toUpperCase() + f.slice(1)}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
-        {filteredShipments.map((shipment, index) => (
-          <TouchableOpacity key={index} style={styles.shipmentCard}>
-            <View style={styles.shipmentHeader}>
-              <Text style={styles.shipmentId}>{shipment.id}</Text>
-              <Text style={styles.shipmentAmount}>{shipment.amount}</Text>
+      {isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={{ marginTop: 10, color: Colors.textSecondary }}>Loading...</Text>
+        </View>
+      ) : (
+        <ScrollView 
+          style={styles.listContainer} 
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />}
+        >
+          {shipments.length === 0 ? (
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <Text style={{ fontSize: 48, marginBottom: 12 }}>📦</Text>
+              <Text style={{ color: Colors.textSecondary, fontSize: 16 }}>No shipments found</Text>
             </View>
-            <View style={styles.shipmentBody}>
-              <View style={styles.shipmentInfo}>
-                <Text style={styles.shipmentLabel}>Destination</Text>
-                <Text style={styles.shipmentValue}>{shipment.destination}</Text>
-              </View>
-              <View style={styles.shipmentInfo}>
-                <Text style={styles.shipmentLabel}>Date</Text>
-                <Text style={styles.shipmentValue}>{shipment.date}</Text>
-              </View>
-            </View>
-            <View style={[
-              styles.statusBadge,
-              shipment.status === 'Delivered' && styles.statusDelivered,
-              shipment.status === 'Cancelled' && styles.statusCancelled,
-            ]}>
-              <Text style={[
-                styles.statusText,
-                shipment.status === 'Delivered' && styles.statusTextDelivered,
-                shipment.status === 'Cancelled' && styles.statusTextCancelled,
-              ]}>
-                {shipment.status}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+          ) : (
+            shipments.map((shipment, index) => {
+              const status = getStatusFromSavingOption(shipment.saving_option);
+              const statusStyle = getStatusStyle(status);
+              return (
+                <TouchableOpacity 
+                  key={shipment.id || index} 
+                  style={{
+                    backgroundColor: '#fff',
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 12,
+                    borderLeftWidth: 4,
+                    borderLeftColor: status === 'Delivered' ? '#166534' : status === 'In Transit' ? '#1e40af' : Colors.primary,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 8,
+                    elevation: 3,
+                  }}
+                  onPress={() => navigateToBiltyDetails(shipment)}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.text, marginBottom: 4 }}>
+                        {shipment.gr_no}
+                      </Text>
+                      <Text style={{ fontSize: 13, color: Colors.textSecondary }}>
+                        {formatDate(shipment.bilty_date)}
+                      </Text>
+                    </View>
+                    <View style={{ backgroundColor: statusStyle.bg, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 }}>
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: statusStyle.color }}>{status}</Text>
+                    </View>
+                  </View>
+                  
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 11, color: Colors.textSecondary, marginBottom: 2 }}>FROM</Text>
+                      <Text style={{ fontSize: 14, fontWeight: '600', color: Colors.text }} numberOfLines={1}>
+                        {shipment.from_city_name || 'N/A'}
+                      </Text>
+                    </View>
+                    <View style={{ paddingHorizontal: 12 }}>
+                      <Text style={{ fontSize: 20, color: Colors.primary }}>→</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 11, color: Colors.textSecondary, marginBottom: 2 }}>TO</Text>
+                      <Text style={{ fontSize: 14, fontWeight: '600', color: Colors.text }} numberOfLines={1}>
+                        {shipment.to_city_name || 'N/A'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTopWidth: 1, borderTopColor: '#f0f0f0' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 16 }}>
+                        <Text style={{ fontSize: 12, color: Colors.textSecondary }}>📦 {shipment.no_of_pkg || 0} Pkg</Text>
+                      </View>
+                      {shipment.wt && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Text style={{ fontSize: 12, color: Colors.textSecondary }}>⚖️ {shipment.wt} Kg</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.primary }}>
+                      ₹{shipment.total || 0}
+                    </Text>
+                  </View>
+
+                  {shipment.consignee_name && (
+                    <View style={{ marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f0f0f0' }}>
+                      <Text style={{ fontSize: 12, color: Colors.textSecondary }}>
+                        Consignee: <Text style={{ color: Colors.text, fontWeight: '500' }}>{shipment.consignee_name}</Text>
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })
+          )}
+          <View style={{ height: 20 }} />
+        </ScrollView>
+      )}
     </View>
   );
 }
