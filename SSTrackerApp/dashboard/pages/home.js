@@ -89,6 +89,7 @@ export default function DashboardHome() {
   return (
     <ScrollView 
       style={styles.container} 
+      contentContainerStyle={{ paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />}
     >
@@ -97,6 +98,7 @@ export default function DashboardHome() {
           <View>
             <Text style={styles.greeting}>Hello!</Text>
             <Text style={styles.phoneNumber}>{user?.companyName || 'Guest'}</Text>
+            <Text style={{ fontSize: 12, color: Colors.textSecondary, marginTop: 2 }}>{user?.phoneNumber || ''}</Text>
           </View>
           <View style={{ 
             backgroundColor: Colors.background, 
@@ -177,6 +179,9 @@ export default function DashboardHome() {
                         <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.text, marginBottom: 4 }}>
                           {shipment.gr_no}
                         </Text>
+                        <Text style={{ fontSize: 12, color: Colors.textSecondary, marginBottom: 2 }}>
+                          To: {shipment.consignee_name || 'N/A'}
+                        </Text>
                         <Text style={{ fontSize: 13, color: Colors.textSecondary }}>
                           {formatDate(shipment.bilty_date)}
                         </Text>
@@ -204,8 +209,7 @@ export default function DashboardHome() {
 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f0f0f0' }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 12, color: Colors.textSecondary }}>📦 </Text>
-                        <Text style={{ fontSize: 12, color: Colors.textSecondary }}>{shipment.no_of_pkg || 0} Pkg</Text>
+                        <Text style={{ fontSize: 12, color: Colors.textSecondary }}>📦 {shipment.no_of_pkg || 0} Pkg</Text>
                         {shipment.wt && (
                           <>
                             <Text style={{ fontSize: 12, color: Colors.textSecondary, marginHorizontal: 8 }}>•</Text>

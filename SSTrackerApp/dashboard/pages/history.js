@@ -107,7 +107,8 @@ export default function DashboardHistory() {
         </View>
       ) : (
         <ScrollView 
-          style={styles.listContainer} 
+          style={styles.listContainer}
+          contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />}
         >
@@ -189,7 +190,10 @@ export default function DashboardHistory() {
                   {shipment.consignee_name && (
                     <View style={{ marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f0f0f0' }}>
                       <Text style={{ fontSize: 12, color: Colors.textSecondary }}>
-                        Consignee: <Text style={{ color: Colors.text, fontWeight: '500' }}>{shipment.consignee_name}</Text>
+                        Consignee: 
+                      </Text>
+                      <Text style={{ fontSize: 12, color: Colors.text, fontWeight: '500' }}>
+                        {shipment.consignee_name}
                       </Text>
                     </View>
                   )}
@@ -197,7 +201,6 @@ export default function DashboardHistory() {
               );
             })
           )}
-          <View style={{ height: 20 }} />
         </ScrollView>
       )}
     </View>
