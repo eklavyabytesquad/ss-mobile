@@ -4,7 +4,7 @@
     "slug": "SSTrackerApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/logomain.png",
     "scheme": "sstrackerapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#d4ac40",
-        "foregroundImage": "./assets/images/logo.png"
+        "foregroundImage": "./assets/images/logomain.png"
       },
       "package": "com.sstransport.tracker",
       "edgeToEdgeEnabled": true,
@@ -40,6 +40,11 @@
     ],
     "experiments": {
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1a43d3c1-e51d-45e1-879a-04c4de437acb"
+      }
     }
   }
 }
