@@ -76,8 +76,19 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateUserData = async (updates) => {
+    try {
+      const updatedUser = { ...user, ...updates };
+      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Update user data error:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, sessionToken, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, sessionToken, isLoading, login, logout, updateUserData }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import Colors from '../../constants/colors';
 
 export default function DashboardProfile() {
+  const navigation = useNavigation();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -19,7 +21,7 @@ export default function DashboardProfile() {
   };
 
   const menuItems = [
-    { icon: '👤', label: 'Edit Profile', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
+    { icon: '👤', label: 'Edit Profile', action: () => navigation.getParent()?.navigate('EditProfile') },
     { icon: '📍', label: 'Saved Addresses', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
     { icon: '🔔', label: 'Notifications', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
     { icon: '🔒', label: 'Privacy & Security', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },

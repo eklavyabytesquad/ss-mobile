@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Alert, Image, ActivityIndicator } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useNavigation } from '@react-navigation/native';
 import { fetchBiltyByGR } from '../../utils/biltyService';
 import Colors from '../../constants/colors';
 import styles from './styles/tracking.styles';
 
 export default function DashboardTracking() {
-  const [trackingId, setTrackingId] = useState('');
-  const [trackingResult, setTrackingResult] = useState(null);
+  const navigation = useNavigation();
+  const [grNumber, setGrNumber] = useState('');
+  const [biltyData, setBiltyData] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
@@ -17,18 +19,18 @@ export default function DashboardTracking() {
     if (!scanned) {
       setScanned(true);
       
-      // Extract LR number from URL if it's a movesure.io link
-      let extractedId = data;
+      // Extract GR number from URL if it's a movesure.io link
+      let extractedGR = data;
       if (data.includes('console.movesure.io/print/')) {
         const parts = data.split('console.movesure.io/print/');
         if (parts.length > 1) {
-          extractedId = parts[1].split('/')[0].split('?')[0];
+          extractedGR = parts[1].split('/')[0].split('?')[0];
         }
       }
       
-      setTrackingId(extractedId);
+      setGrNumber(extractedGR);
       setShowScanner(false);
-      handleTrack(extractedId);
+      searchBiltyByGR(extractedGR);
       
       setTimeout(() => setScanned(false), 2000);
     }
@@ -65,66 +67,64 @@ export default function DashboardTracking() {
     return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
-  const handleTrack = async (id = trackingId) => {
-    if (!id) {
-      Alert.alert('Error', 'Please enter a tracking ID');
+  const searchBiltyByGR = async (grNo = grNumber) => {
+    if (!grNo || grNo.trim() === '') {
+      Alert.alert('Error', 'Please enter a GR Number');
       return;
     }
     
     setIsLoading(true);
     try {
-      const result = await fetchBiltyByGR(id);
+      const result = await fetchBiltyByGR(grNo.trim());
       
       if (result.success && result.data) {
-        const bilty = result.data;
-        setTrackingResult({
-          id: bilty.gr_no,
-          status: getStatusFromSavingOption(bilty.saving_option),
-          origin: bilty.from_city_name || 'N/A',
-          destination: bilty.to_city_name || 'N/A',
-          consignor: bilty.consignor_name,
-          consignee: bilty.consignee_name,
-          biltyDate: formatDate(bilty.bilty_date),
-          packages: bilty.no_of_pkg,
-          weight: bilty.wt,
-          total: bilty.total,
-          invoiceNo: bilty.invoice_no,
-          eWayBill: bilty.e_way_bill,
-          paymentMode: bilty.payment_mode,
-          remark: bilty.remark,
-        });
+        setBiltyData(result.data);
       } else {
-        Alert.alert('Not Found', 'No shipment found with this tracking ID');
-        setTrackingResult(null);
+        Alert.alert('Not Found', `No bilty found with GR Number: ${grNo}`);
+        setBiltyData(null);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to fetch tracking details');
+      console.error('Error fetching bilty:', error);
+      Alert.alert('Error', 'Failed to fetch bilty details. Please try again.');
+      setBiltyData(null);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleBiltyPress = (bilty) => {
+    // Navigate to BiltyDetails screen in parent stack navigator
+    navigation.getParent()?.navigate('BiltyDetails', { biltyId: bilty.id });
+  };
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={{ paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>SS Tracker</Text>
-        <Text style={styles.subtitle}>Enter tracking ID to get live updates</Text>
+        <Text style={styles.subtitle}>Search by GR Number or Scan QR Code</Text>
       </View>
 
       <View style={styles.searchContainer}>
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Enter Tracking ID (e.g., SHP001)"
-            value={trackingId}
-            onChangeText={setTrackingId}
+            placeholder="Enter GR Number"
+            value={grNumber}
+            onChangeText={setGrNumber}
+            autoCapitalize="characters"
+            returnKeyType="search"
+            onSubmitEditing={() => searchBiltyByGR()}
           />
-          {trackingId.length > 0 && (
+          {grNumber.length > 0 && (
             <TouchableOpacity 
               style={styles.clearButton} 
               onPress={() => {
-                setTrackingId('');
-                setTrackingResult(null);
+                setGrNumber('');
+                setBiltyData(null);
               }}
             >
               <Text style={styles.clearButtonText}>✕</Text>
@@ -132,16 +132,16 @@ export default function DashboardTracking() {
           )}
         </View>
         <TouchableOpacity 
-        style={[styles.searchButton, isLoading && { opacity: 0.7 }]} 
-        onPress={() => handleTrack()}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="#fff" size="small" />
-        ) : (
-          <Text style={styles.searchButtonText}>Track</Text>
-        )}
-      </TouchableOpacity>
+          style={[styles.searchButton, isLoading && { opacity: 0.7 }]} 
+          onPress={() => searchBiltyByGR()}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.searchButtonText}>Search</Text>
+          )}
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.scanCapsule} onPress={openScanner}>
@@ -152,93 +152,89 @@ export default function DashboardTracking() {
         <Text style={styles.scanCapsuleText}>Scan QR Code</Text>
       </TouchableOpacity>
 
-      {trackingResult && (
-        <View style={styles.resultContainer}>
-          <View style={styles.resultHeader}>
-            <Text style={styles.resultId}>{trackingResult.id}</Text>
+      {biltyData && (
+        <TouchableOpacity 
+          style={styles.biltyCard}
+          onPress={() => handleBiltyPress(biltyData)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.cardHeader}>
+            <View>
+              <Text style={styles.grNumber}>{biltyData.gr_no}</Text>
+              <Text style={styles.biltyDate}>{formatDate(biltyData.bilty_date)}</Text>
+            </View>
             <View style={[
-              styles.statusBadge, 
-              { backgroundColor: trackingResult.status === 'Delivered' ? '#dcfce7' : 
-                               trackingResult.status === 'In Transit' ? '#dbeafe' : '#fef3c7' }
+              styles.statusBadge,
+              { backgroundColor: biltyData.saving_option === 'DELIVERED' ? '#dcfce7' : 
+                               biltyData.saving_option === 'IN_TRANSIT' ? '#dbeafe' : '#fef3c7' }
             ]}>
               <Text style={[
                 styles.statusText,
-                { color: trackingResult.status === 'Delivered' ? Colors.delivered : 
-                        trackingResult.status === 'In Transit' ? Colors.inTransit : Colors.atHub }
-              ]}>{trackingResult.status}</Text>
-            </View>
-          </View>
-
-          <View style={styles.routeInfo}>
-            <View style={styles.routePoint}>
-              <Text style={styles.routeLabel}>From</Text>
-              <Text style={styles.routeValue}>{trackingResult.origin}</Text>
-            </View>
-            <Text style={styles.routeArrow}>→</Text>
-            <View style={styles.routePoint}>
-              <Text style={styles.routeLabel}>To</Text>
-              <Text style={styles.routeValue}>{trackingResult.destination}</Text>
-            </View>
-          </View>
-
-          <View style={styles.deliveryInfo}>
-            <Text style={styles.deliveryLabel}>Bilty Date</Text>
-            <Text style={styles.deliveryDate}>{trackingResult.biltyDate}</Text>
-          </View>
-
-          <View style={styles.detailsSection}>
-            <Text style={styles.timelineTitle}>Shipment Details</Text>
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Consignor</Text>
-              <Text style={styles.detailValue}>{trackingResult.consignor || 'N/A'}</Text>
-            </View>
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Consignee</Text>
-              <Text style={styles.detailValue}>{trackingResult.consignee || 'N/A'}</Text>
-            </View>
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>No. of Packages</Text>
-              <Text style={styles.detailValue}>{trackingResult.packages || '0'}</Text>
-            </View>
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Weight</Text>
-              <Text style={styles.detailValue}>{trackingResult.weight ? `${trackingResult.weight} kg` : 'N/A'}</Text>
-            </View>
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Invoice No</Text>
-              <Text style={styles.detailValue}>{trackingResult.invoiceNo || 'N/A'}</Text>
-            </View>
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>E-Way Bill</Text>
-              <Text style={styles.detailValue}>{trackingResult.eWayBill || 'N/A'}</Text>
-            </View>
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Payment Mode</Text>
-              <Text style={styles.detailValue}>{trackingResult.paymentMode || 'N/A'}</Text>
-            </View>
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Total Amount</Text>
-              <Text style={[styles.detailValue, { color: Colors.primary, fontWeight: 'bold' }]}>
-                ₹{trackingResult.total || '0'}
+                { color: biltyData.saving_option === 'DELIVERED' ? Colors.delivered : 
+                        biltyData.saving_option === 'IN_TRANSIT' ? Colors.inTransit : Colors.atHub }
+              ]}>
+                {getStatusFromSavingOption(biltyData.saving_option)}
               </Text>
             </View>
-
-            {trackingResult.remark && (
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Remark</Text>
-                <Text style={styles.detailValue}>{trackingResult.remark}</Text>
-              </View>
-            )}
           </View>
-        </View>
+
+          <View style={styles.routeContainer}>
+            <View style={styles.cityBox}>
+              <Text style={styles.cityLabel}>From</Text>
+              <Text style={styles.cityName} numberOfLines={1}>
+                {biltyData.from_city_name || 'N/A'}
+              </Text>
+            </View>
+            <Text style={styles.routeArrow}>→</Text>
+            <View style={styles.cityBox}>
+              <Text style={styles.cityLabel}>To</Text>
+              <Text style={styles.cityName} numberOfLines={1}>
+                {biltyData.to_city_name || 'N/A'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Consignor:</Text>
+            <Text style={styles.infoValue} numberOfLines={1}>
+              {biltyData.consignor_name}
+            </Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Consignee:</Text>
+            <Text style={styles.infoValue} numberOfLines={1}>
+              {biltyData.consignee_name || 'N/A'}
+            </Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.cardFooter}>
+            <View style={styles.footerItem}>
+              <Text style={styles.footerLabel}>Packages</Text>
+              <Text style={styles.footerValue}>{biltyData.no_of_pkg || 0}</Text>
+            </View>
+            <View style={styles.footerDivider} />
+            <View style={styles.footerItem}>
+              <Text style={styles.footerLabel}>Weight</Text>
+              <Text style={styles.footerValue}>{biltyData.wt ? `${biltyData.wt} kg` : 'N/A'}</Text>
+            </View>
+            <View style={styles.footerDivider} />
+            <View style={styles.footerItem}>
+              <Text style={styles.footerLabel}>Amount</Text>
+              <Text style={[styles.footerValue, { color: Colors.primary }]}>
+                ₹{biltyData.total || '0'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.tapHint}>
+            <Text style={styles.tapHintText}>Tap to view full details →</Text>
+          </View>
+        </TouchableOpacity>
       )}
 
       <Modal

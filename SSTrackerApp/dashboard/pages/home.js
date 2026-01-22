@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl, Linking, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { getBiltyStats, getRecentBilty } from '../../utils/biltyService';
@@ -10,6 +10,7 @@ export default function DashboardHome() {
   const navigation = useNavigation();
   const { user } = useAuth();
   const [stats, setStats] = useState({
+    total: 0,
     active: 0,
     inTransit: 0,
     delivered: 0,
@@ -51,10 +52,10 @@ export default function DashboardHome() {
   };
 
   const statsData = [
-    { label: 'Active', value: stats.active.toString(), icon: require('../../assets/images/shipping-box.png'), isPng: true },
-    { label: 'In Transit', value: stats.inTransit.toString(), icon: require('../../assets/images/truck.png'), isPng: true },
-    { label: 'Delivered', value: stats.delivered.toString(), icon: '✅', isPng: false },
-    { label: 'At Hub', value: stats.atHub.toString(), icon: require('../../assets/images/warehosue.png'), isPng: true },
+    { label: 'Total Bilties', value: stats.total.toString(), icon: require('../../assets/images/shipping-box.png'), isPng: true, color: '#8b5cf6' },
+    { label: 'In Transit', value: stats.inTransit.toString(), icon: require('../../assets/images/truck.png'), isPng: true, color: '#3b82f6' },
+    { label: 'Delivered', value: stats.delivered.toString(), icon: '✅', isPng: false, color: '#10b981' },
+    { label: 'At Hub', value: stats.atHub.toString(), icon: require('../../assets/images/warehosue.png'), isPng: true, color: '#f59e0b' },
   ];
 
   const getStatusFromSavingOption = (savingOption) => {
@@ -84,6 +85,23 @@ export default function DashboardHome() {
 
   const navigateToBiltyDetails = (bilty) => {
     navigation.getParent()?.navigate('BiltyDetails', { biltyId: bilty.id, grNo: bilty.gr_no });
+  };
+
+  const handleCallSupport = () => {
+    const phoneNumber = '7902122230';
+    Alert.alert(
+      'Call Support',
+      `Do you want to call ${phoneNumber}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Call',
+          onPress: () => {
+            Linking.openURL(`tel:${phoneNumber}`);
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -128,21 +146,25 @@ export default function DashboardHome() {
         <>
           <View style={styles.statsContainer}>
             {statsData.map((stat, index) => (
-              <View key={index} style={styles.statCard}>
+              <View key={index} style={[styles.statCard, { borderTopWidth: 3, borderTopColor: stat.color || Colors.primary }]}>
                 {stat.isPng ? (
-                  <Image source={stat.icon} style={{ width: 32, height: 32, tintColor: Colors.primary, marginBottom: 8 }} />
+                  <Image source={stat.icon} style={{ width: 32, height: 32, tintColor: stat.color || Colors.primary, marginBottom: 8 }} />
                 ) : (
                   <Text style={styles.statIcon}>{stat.icon}</Text>
                 )}
-                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={[styles.statValue, { color: stat.color || Colors.primary }]}>{stat.value}</Text>
                 <Text style={styles.statLabel}>{stat.label}</Text>
               </View>
             ))}
           </View>
 
           <View style={styles.section}>
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: Colors.text, marginBottom: 4 }}>Your Consignments</Text>
+              <Text style={{ fontSize: 13, color: Colors.textSecondary }}>Recent {recentShipments.length} shipment{recentShipments.length !== 1 ? 's' : ''}</Text>
+            </View>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent Shipments</Text>
+              <Text style={styles.sectionTitle}>Latest Activity</Text>
               <TouchableOpacity onPress={() => navigation?.navigate('History')}>
                 <Text style={styles.viewAllText}>View All</Text>
               </TouchableOpacity>
@@ -238,7 +260,7 @@ export default function DashboardHome() {
                 <Text style={styles.actionIcon}>🔍</Text>
                 <Text style={styles.actionText}>Track</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton}>
+              <TouchableOpacity style={styles.actionButton} onPress={handleCallSupport}>
                 <Text style={styles.actionIcon}>📞</Text>
                 <Text style={styles.actionText}>Support</Text>
               </TouchableOpacity>

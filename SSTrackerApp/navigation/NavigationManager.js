@@ -8,6 +8,7 @@ import HomeScreen from '../pages/index';
 import LoginScreen from '../pages/login';
 import DashboardLayout from '../dashboard/_layout';
 import BiltyDetails from '../dashboard/pages/bilty-details';
+import EditProfile from '../dashboard/pages/edit-profile';
 import Colors from '../constants/colors';
 
 const Stack = createNativeStackNavigator();
@@ -48,6 +49,7 @@ function AppNavigator() {
           <>
             <Stack.Screen name="Dashboard" component={DashboardLayout} />
             <Stack.Screen name="BiltyDetails" component={BiltyDetails} />
+            <Stack.Screen name="EditProfile" component={EditProfile} />
           </>
         )}
       </Stack.Navigator>

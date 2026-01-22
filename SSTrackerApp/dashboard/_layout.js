@@ -7,6 +7,7 @@ import DashboardHome from './pages/home';
 import DashboardTracking from './pages/tracking';
 import DashboardHistory from './pages/history';
 import DashboardProfile from './pages/profile';
+import CityRates from './pages/city-rates';
 
 const Tab = createBottomTabNavigator();
 
@@ -81,6 +82,23 @@ export default function DashboardLayout() {
           tabBarIcon: ({ focused }) => (
             <Image
               source={require('../assets/images/list.png')}
+              style={{ 
+                width: 28, 
+                height: 28,
+                tintColor: focused ? Colors.primary : Colors.textMuted 
+              }}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="CityRates"
+        component={CityRates}
+        options={{
+          title: 'City & Rates',
+          tabBarIcon: ({ focused }) => (
+            <Image
+              source={require('../assets/images/warehosue.png')}
               style={{ 
                 width: 28, 
                 height: 28,
