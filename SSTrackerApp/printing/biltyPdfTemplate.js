@@ -43,8 +43,8 @@ const generateBiltyCopy = (data, copyType) => {
   const toCityCode = toCity?.city_code || '';
   
   // Use permanentDetails with correct column names
-  const companyName = permanentDetails?.transport_name || 'SS TRANSPORT CO.';
-  const companyGst = permanentDetails?.gst || '09AAJHM1234A1ZV';
+  const companyName = permanentDetails?.transport_name || 'SS TRANSPORT CORPORATION';
+  const companyGst = permanentDetails?.gst || '09COVPS5556J1ZT';
   const companyMobile = permanentDetails?.mobile_number || '7668291228';
   const companyAddress = permanentDetails?.transport_address || 'GANDHI MARKET, G T ROAD, ALIGARH-202001';
   const companyWebsite = permanentDetails?.website || 'www.sstransport.in';
