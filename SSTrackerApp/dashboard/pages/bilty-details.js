@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Share, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Share, Alert, Image, Clipboard, Linking } from 'react-native';
 import { fetchBiltyById, fetchBiltyByGR } from '../../utils/biltyService';
 import { BiltyPdfGenerator } from '../../printing';
 import Colors from '../../constants/colors';
@@ -9,10 +9,41 @@ export default function BiltyDetails({ route, navigation }) {
   const [bilty, setBilty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     loadBiltyDetails();
   }, [biltyId, grNo]);
+
+  // Prefetch image when bilty data loads
+  useEffect(() => {
+    if (bilty?.bilty_image) {
+      const optimizedUrl = getOptimizedImageUrl(bilty.bilty_image);
+      Image.prefetch(optimizedUrl)
+        .then(() => {
+          console.log('Image prefetched successfully');
+          setImageLoading(false);
+        })
+        .catch((error) => {
+          console.error('Image prefetch error:', error);
+          setImageLoading(false);
+        });
+    }
+  }, [bilty]);
+
+  // Optimize image URL with Supabase transformations
+  const getOptimizedImageUrl = (imageUrl) => {
+    if (!imageUrl) return imageUrl;
+    
+    // Add Supabase image transformation parameters to reduce size
+    // width=800 and quality=75 for faster loading
+    if (imageUrl.includes('supabase.co/storage')) {
+      const separator = imageUrl.includes('?') ? '&' : '?';
+      return `${imageUrl}${separator}width=800&quality=75`;
+    }
+    return imageUrl;
+  };
 
   const loadBiltyDetails = async () => {
     setIsLoading(true);
@@ -76,6 +107,34 @@ export default function BiltyDetails({ route, navigation }) {
       await Share.share({ message });
     } catch (error) {
       console.error('Share error:', error);
+    }
+  };
+
+  const handleCopyImageLink = async () => {
+    try {
+      if (bilty?.bilty_image) {
+        await Clipboard.setString(bilty.bilty_image);
+        Alert.alert('Success', 'Image link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Copy link error:', error);
+      Alert.alert('Error', 'Failed to copy image link');
+    }
+  };
+
+  const handleDownloadImage = async () => {
+    try {
+      if (bilty?.bilty_image) {
+        const supported = await Linking.canOpenURL(bilty.bilty_image);
+        if (supported) {
+          await Linking.openURL(bilty.bilty_image);
+        } else {
+          Alert.alert('Error', 'Cannot open image URL');
+        }
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      Alert.alert('Error', 'Failed to open image');
     }
   };
 
@@ -208,6 +267,80 @@ export default function BiltyDetails({ route, navigation }) {
             </View>
           )}
         </View>
+
+        {/* Transit Bilty Image */}
+        {bilty?.bilty_image && !imageError && (
+          <View style={{ backgroundColor: '#fff', marginHorizontal: 16, marginBottom: 16, borderRadius: 16, padding: 20, elevation: 3, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: Colors.textSecondary, marginBottom: 16 }}>TRANSIT BILTY</Text>
+            <TouchableOpacity activeOpacity={0.9}>
+              <View style={{ position: 'relative' }}>
+                {imageLoading && (
+                  <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f9fafb', borderRadius: 12, height: 300, zIndex: 1 }}>
+                    <ActivityIndicator size="large" color={Colors.primary} />
+                    <Text style={{ marginTop: 10, color: Colors.textSecondary, fontSize: 12 }}>Loading image...</Text>
+                  </View>
+                )}
+                <Image 
+                  source={{ 
+                    uri: getOptimizedImageUrl(bilty.bilty_image),
+                    cache: 'force-cache'
+                  }}
+                  style={{ 
+                    width: '100%', 
+                    height: 300, 
+                    borderRadius: 12,
+                    resizeMode: 'contain',
+                    backgroundColor: '#f9fafb'
+                  }}
+                  onLoadEnd={() => setImageLoading(false)}
+                  onLoad={() => setImageLoading(false)}
+                  onError={(e) => {
+                    console.error('Image load error:', e.nativeEvent.error);
+                    setImageLoading(false);
+                    setImageError(true);
+                  }}
+                />
+              </View>
+            </TouchableOpacity>
+            
+            {/* Image Actions */}
+            <View style={{ flexDirection: 'row', marginTop: 16, gap: 12 }}>
+              <TouchableOpacity 
+                onPress={handleCopyImageLink}
+                style={{ 
+                  flex: 1, 
+                  flexDirection: 'row', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  backgroundColor: '#f3f4f6', 
+                  paddingVertical: 12, 
+                  paddingHorizontal: 16, 
+                  borderRadius: 10
+                }}
+              >
+                <Text style={{ fontSize: 16, marginRight: 6 }}>🔗</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: Colors.text }}>Copy Link</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                onPress={handleDownloadImage}
+                style={{ 
+                  flex: 1, 
+                  flexDirection: 'row', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  backgroundColor: Colors.primary, 
+                  paddingVertical: 12, 
+                  paddingHorizontal: 16, 
+                  borderRadius: 10
+                }}
+              >
+                <Text style={{ fontSize: 16, marginRight: 6 }}>⬇️</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#fff' }}>Download</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* Invoice & Document Details */}
         <View style={{ backgroundColor: '#fff', marginHorizontal: 16, marginBottom: 16, borderRadius: 16, padding: 20, elevation: 3, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 }}>
