@@ -4,10 +4,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { TransporterAuthProvider, useTransporterAuth } from '../context/TransporterAuthContext';
 import SplashScreen from '../pages/splash';
 import HomeScreen from '../pages/index';
 import LoginScreen from '../pages/login';
+import TransporterLoginScreen from '../pages/transporter-login';
 import DashboardLayout from '../dashboard/_layout';
+import TransporterDashboardLayout from '../transporter-dashboard/_layout';
 import BiltyDetails from '../dashboard/pages/bilty-details';
 import EditProfile from '../dashboard/pages/edit-profile';
 import PrintBilty from '../dashboard/pages/print-bilty';
@@ -33,8 +36,11 @@ const loadingStyles = StyleSheet.create({
 });
 
 function AppNavigator() {
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn: isConsignorLoggedIn, isLoading: isConsignorLoading } = useAuth();
+  const { isLoggedIn: isTransporterLoggedIn, isLoading: isTransporterLoading } = useTransporterAuth();
   const [showSplash, setShowSplash] = useState(true);
+
+  const isLoading = isConsignorLoading || isTransporterLoading;
 
   useEffect(() => {
     // Only show splash on first mount
@@ -56,17 +62,25 @@ function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!isLoggedIn ? (
-          <>
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-          </>
-        ) : (
+        {isConsignorLoggedIn ? (
+          // Consignor Dashboard
           <>
             <Stack.Screen name="Dashboard" component={DashboardLayout} />
             <Stack.Screen name="BiltyDetails" component={BiltyDetails} />
             <Stack.Screen name="EditProfile" component={EditProfile} />
             <Stack.Screen name="PrintBilty" component={PrintBilty} />
+          </>
+        ) : isTransporterLoggedIn ? (
+          // Transporter Dashboard
+          <>
+            <Stack.Screen name="TransporterDashboard" component={TransporterDashboardLayout} />
+          </>
+        ) : (
+          // Auth Screens
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="TransporterLogin" component={TransporterLoginScreen} />
           </>
         )}
       </Stack.Navigator>
@@ -77,7 +91,9 @@ function AppNavigator() {
 export function NavigationManager() {
   return (
     <AuthProvider>
-      <AppNavigator />
+      <TransporterAuthProvider>
+        <AppNavigator />
+      </TransporterAuthProvider>
     </AuthProvider>
   );
 }

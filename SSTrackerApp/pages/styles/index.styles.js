@@ -93,6 +93,20 @@ export default StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
+  transporterLoginButton: {
+    backgroundColor: '#eff6ff',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#bfdbfe',
+  },
+  transporterLoginText: {
+    color: '#2563eb',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
   footerText: {
     textAlign: 'center',
     fontSize: 11,

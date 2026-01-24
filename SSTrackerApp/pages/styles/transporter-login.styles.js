@@ -1,5 +1,4 @@
 import { StyleSheet, Dimensions } from 'react-native';
-import Colors from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -52,13 +51,16 @@ export default StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
     marginBottom: 20,
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  logo: {
-    width: 120,
-    height: 80,
+  logoIcon: {
+    fontSize: 50,
   },
   appTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 4,
@@ -75,6 +77,7 @@ export default StyleSheet.create({
     flex: 1,
     marginTop: -20,
     paddingHorizontal: 20,
+    paddingBottom: 40,
   },
   formCard: {
     backgroundColor: '#fff',
@@ -101,20 +104,36 @@ export default StyleSheet.create({
   welcomeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fef3c7',
+    backgroundColor: '#dbeafe',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
     marginBottom: 20,
   },
   welcomeIcon: {
-    fontSize: 20,
-    marginRight: 8,
+    fontSize: 24,
+    marginRight: 12,
+  },
+  welcomeInfo: {
+    flex: 1,
   },
   welcomeText: {
-    fontSize: 15,
-    color: '#92400e',
-    fontWeight: '600',
+    fontSize: 16,
+    color: '#1e40af',
+    fontWeight: '700',
+  },
+  welcomeSubtext: {
+    fontSize: 13,
+    color: '#3b82f6',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  gstDisplay: {
+    fontSize: 11,
+    color: '#60a5fa',
+    fontWeight: '500',
+    marginTop: 3,
+    fontFamily: 'monospace',
   },
   inputContainer: {
     marginBottom: 20,
@@ -125,6 +144,51 @@ export default StyleSheet.create({
     color: '#374151',
     marginBottom: 10,
   },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderRadius: 16,
+    backgroundColor: '#f9fafb',
+    paddingHorizontal: 16,
+  },
+  inputIcon: {
+    fontSize: 18,
+    marginRight: 12,
+  },
+  textInput: {
+    flex: 1,
+    paddingVertical: 18,
+    fontSize: 15,
+    color: '#1f2937',
+    fontWeight: '600',
+    letterSpacing: 1,
+  },
+  inputActive: {
+    borderColor: '#2563eb',
+    backgroundColor: '#fff',
+  },
+  inputHint: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 4,
+  },
+  gstInfoContainer: {
+    marginTop: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  gstLength: {
+    fontSize: 12,
+    color: '#2563eb',
+    fontWeight: '600',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    backgroundColor: '#eff6ff',
+    borderRadius: 8,
+  },
   phoneInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -133,11 +197,6 @@ export default StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#f9fafb',
     overflow: 'hidden',
-    transition: 'all 0.3s',
-  },
-  inputActive: {
-    borderColor: Colors.primary,
-    backgroundColor: '#fff',
   },
   countryCodeContainer: {
     paddingHorizontal: 16,
@@ -158,6 +217,20 @@ export default StyleSheet.create({
     fontSize: 15,
     color: '#1f2937',
     fontWeight: '500',
+  },
+  verifiedBadge: {
+    backgroundColor: '#10b981',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  verifiedText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
   },
   otpInput: {
     borderWidth: 2,
@@ -184,7 +257,7 @@ export default StyleSheet.create({
     fontStyle: 'italic',
   },
   resendText: {
-    color: Colors.primary,
+    color: '#2563eb',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -192,7 +265,7 @@ export default StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     marginTop: 8,
-    shadowColor: Colors.primary,
+    shadowColor: '#2563eb',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -248,32 +321,5 @@ export default StyleSheet.create({
     fontSize: 12,
     color: '#9ca3af',
     fontWeight: '500',
-  },
-  transporterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#eff6ff',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-  },
-  transporterIcon: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  transporterText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2563eb',
-    flex: 1,
-  },
-  transporterArrow: {
-    fontSize: 16,
-    color: '#2563eb',
-    fontWeight: '600',
   },
 });

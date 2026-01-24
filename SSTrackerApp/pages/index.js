@@ -92,6 +92,14 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.loginButtonText}>🔐 Login with Phone</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.transporterLoginButton}
+          onPress={() => navigation.navigate('TransporterLogin')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.transporterLoginText}>🚛 Transporter Login</Text>
+        </TouchableOpacity>
+
         <Text style={styles.footerText}>
           By continuing, you agree to our Terms & Privacy Policy
         </Text>

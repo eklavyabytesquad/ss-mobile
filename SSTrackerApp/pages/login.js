@@ -219,6 +219,16 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.securityIcon}>🔒</Text>
               <Text style={styles.securityText}>Secure Login • End-to-End Encrypted</Text>
             </View>
+
+            {/* Transporter Login Button */}
+            <TouchableOpacity 
+              style={styles.transporterButton}
+              onPress={() => navigation.navigate('TransporterLogin')}
+            >
+              <Text style={styles.transporterIcon}>🚛</Text>
+              <Text style={styles.transporterText}>Login as Transporter</Text>
+              <Text style={styles.transporterArrow}>→</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
