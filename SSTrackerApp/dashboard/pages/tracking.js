@@ -113,6 +113,7 @@ export default function DashboardTracking() {
           <TextInput
             style={styles.searchInput}
             placeholder="Enter GR Number"
+            placeholderTextColor={Colors.textMuted || '#999'}
             value={grNumber}
             onChangeText={setGrNumber}
             autoCapitalize="characters"
