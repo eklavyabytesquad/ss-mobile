@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import SplashScreen from '../pages/splash';
 import HomeScreen from '../pages/index';
 import LoginScreen from '../pages/login';
 import DashboardLayout from '../dashboard/_layout';
@@ -33,9 +34,23 @@ const loadingStyles = StyleSheet.create({
 
 function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    // Only show splash on first mount
+    if (!isLoading && showSplash) {
+      // Splash will control its own timing
+    }
+  }, [isLoading]);
 
   if (isLoading) {
     return <LoadingScreen />;
+  }
+
+  if (showSplash) {
+    return (
+      <SplashScreen onAnimationComplete={() => setShowSplash(false)} />
+    );
   }
 
   return (

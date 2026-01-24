@@ -13,8 +13,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#d4ac40",
-        "foregroundImage": "./assets/images/logomain.png"
+        "foregroundImage": "./assets/images/logomain.png",
+        "backgroundImage": "./assets/images/logomain.png"
       },
       "package": "com.sstransport.tracker",
       "edgeToEdgeEnabled": true,
