@@ -15,6 +15,16 @@ export default function BiltyDetails({ route, navigation }) {
   const [transitData, setTransitData] = useState(null);
   const [challanData, setChallanData] = useState(null);
   const [kaatTransport, setKaatTransport] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadBiltyDetails();
+    } finally {
+      setTimeout(() => setRefreshing(false), 600);
+    }
+  };
 
   useEffect(() => {
     loadBiltyDetails();
@@ -323,13 +333,25 @@ export default function BiltyDetails({ route, navigation }) {
           }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={{ fontSize: 15, fontWeight: '700', color: '#fff', letterSpacing: 1 }}>📍 LIVE TRACKING</Text>
-              </View>
-              {challanData?.challan_no ? (
-                <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '700', color: '#fff', letterSpacing: 0.5 }}>CH: {challanData.challan_no}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, marginRight: 10 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: isDelivered ? '#34d399' : '#ef4444', marginRight: 6 }} />
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#fff', letterSpacing: 1 }}>LIVE</Text>
                 </View>
-              ) : null}
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#fff', letterSpacing: 0.5 }}>Tracking Details</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {challanData?.challan_no ? (
+                  <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginRight: 8 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '700', color: '#fff', letterSpacing: 0.5 }}>CH: {challanData.challan_no}</Text>
+                  </View>
+                ) : null}
+                <TouchableOpacity
+                  onPress={handleRefresh}
+                  style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' }}
+                >
+                  <Text style={{ fontSize: 14, color: '#fff', transform: [{ rotate: refreshing ? '180deg' : '0deg' }] }}>🔄</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Progress Bar */}
@@ -366,8 +388,8 @@ export default function BiltyDetails({ route, navigation }) {
             </View>
           </View>
 
-          {/* Truck / Warehouse Card */}
-          {challanData?.truck?.truck_number ? (
+          {/* Truck Card - only when dispatched with truck */}
+          {challanData?.is_dispatched && challanData?.truck?.truck_number ? (
             <View style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -401,7 +423,10 @@ export default function BiltyDetails({ route, navigation }) {
                 </View>
               ) : null}
             </View>
-          ) : !isDelivered ? (
+          ) : null}
+
+          {/* Warehouse Card - when challan exists but not dispatched, or no challan at all */}
+          {!isDelivered && !(challanData?.is_dispatched) ? (
             <View style={{
               backgroundColor: '#fff',
               borderRadius: 14,
@@ -419,8 +444,12 @@ export default function BiltyDetails({ route, navigation }) {
                   <Text style={{ fontSize: 22 }}>🏭</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#1e293b' }}>Currently at DUBE PARAO WAREHOUSE</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5, flexWrap: 'wrap' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#f59e0b', marginRight: 6 }} />
+                    <Text style={{ fontSize: 10, fontWeight: '700', color: '#92400e', letterSpacing: 0.5 }}>CURRENT LOCATION</Text>
+                  </View>
+                  <Text style={{ fontSize: 14, fontWeight: '800', color: '#1e293b' }}>DUBE PARAO WAREHOUSE</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, backgroundColor: '#fffbeb', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start' }}>
                     <Text style={{ fontSize: 11, color: '#92400e', fontWeight: '600' }}>🕐 Expected dispatch: </Text>
                     <Text style={{ fontSize: 11, fontWeight: '700', color: '#b45309' }}>{getExpectedDispatch()}</Text>
                   </View>

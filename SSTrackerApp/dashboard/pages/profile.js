@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Image, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import Colors from '../../constants/colors';
@@ -20,242 +19,340 @@ export default function DashboardProfile() {
     );
   };
 
-  const menuItems = [
-    { icon: '👤', label: 'Edit Profile', action: () => navigation.getParent()?.navigate('EditProfile') },
-    { icon: '📍', label: 'Saved Addresses', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
-    { icon: '🔔', label: 'Notifications', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
-    { icon: '🔒', label: 'Privacy & Security', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
-    { icon: '❓', label: 'Help & Support', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
-    { icon: '📄', label: 'Terms & Conditions', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
-    { icon: 'ℹ️', label: 'About SS Tracker', action: () => Alert.alert('SS Tracker', 'Version 1.0.0\n\nYour trusted transport tracking partner') },
+  const getInitials = () => {
+    if (!user?.companyName) return '?';
+    return user.companyName
+      .split(' ')
+      .map(w => w[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const accountItems = [
+    { icon: '✏️', label: 'Edit Profile', subtitle: 'Update address, PAN & Aadhar', bg: '#eff6ff', action: () => navigation.getParent()?.navigate('EditProfile') },
+    { icon: '📍', label: 'Saved Addresses', subtitle: 'Manage delivery addresses', bg: '#f5f3ff', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
+    { icon: '🔔', label: 'Notifications', subtitle: 'Alerts & shipment updates', bg: '#fffbeb', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
   ];
 
+  const supportItems = [
+    { icon: '🔒', label: 'Privacy & Security', subtitle: 'Data protection settings', bg: '#ecfdf5', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
+    { icon: '❓', label: 'Help & Support', subtitle: 'FAQs & contact support', bg: '#ecfeff', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
+    { icon: '📄', label: 'Terms & Conditions', subtitle: 'Legal information', bg: '#f9fafb', action: () => Alert.alert('Coming Soon', 'This feature will be available soon') },
+    { icon: 'ℹ️', label: 'About SS Tracker', subtitle: 'App version & info', bg: '#f1f5f9', action: () => Alert.alert('SS Tracker', 'Version 1.0.0\n\nYour trusted transport tracking partner\n\nPowered by movesure.io') },
+  ];
+
+  const renderMenuItem = (item, index, arr) => (
+    <TouchableOpacity
+      key={index}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        borderBottomWidth: index < arr.length - 1 ? 1 : 0,
+        borderBottomColor: '#f1f5f9',
+      }}
+      onPress={item.action}
+      activeOpacity={0.6}
+    >
+      <View style={{
+        width: 42,
+        height: 42,
+        borderRadius: 13,
+        backgroundColor: item.bg,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 14,
+      }}>
+        <Text style={{ fontSize: 19 }}>{item.icon}</Text>
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 15, fontWeight: '600', color: '#1e293b' }}>{item.label}</Text>
+        <Text style={{ fontSize: 12, color: '#94a3b8', marginTop: 1 }}>{item.subtitle}</Text>
+      </View>
+      <View style={{
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: '#f8fafc',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <Text style={{ fontSize: 14, color: '#cbd5e1', fontWeight: '700' }}>›</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const InfoRow = ({ emoji, label, value }) => (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 14 }}>
+      <View style={{
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: '#f8fafc',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+      }}>
+        <Text style={{ fontSize: 16 }}>{emoji}</Text>
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 11, fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</Text>
+        <Text style={{ fontSize: 14, fontWeight: '600', color: '#1e293b', marginTop: 2 }}>{value}</Text>
+      </View>
+    </View>
+  );
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
-      <ScrollView 
+    <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
+      <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {/* Header with Gradient */}
-        <LinearGradient
-          colors={[Colors.primary, '#b8922e', Colors.primary]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            paddingTop: 60,
-            paddingBottom: 40,
-            paddingHorizontal: 20,
-            borderBottomLeftRadius: 30,
-            borderBottomRightRadius: 30,
-          }}
-        >
+        {/* Header */}
+        <View style={{
+          backgroundColor: '#1e293b',
+          paddingTop: Platform.OS === 'ios' ? 60 : 50,
+          paddingBottom: 60,
+          paddingHorizontal: 24,
+          borderBottomLeftRadius: 32,
+          borderBottomRightRadius: 32,
+        }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#64748b', textAlign: 'center', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 20 }}>
+            My Profile
+          </Text>
+
           <View style={{ alignItems: 'center' }}>
-            {/* Avatar */}
+            {/* Avatar with initials */}
             <View style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: '#fff',
+              width: 90,
+              height: 90,
+              borderRadius: 45,
+              backgroundColor: Colors.primary,
               justifyContent: 'center',
               alignItems: 'center',
               marginBottom: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
+              borderWidth: 3,
+              borderColor: 'rgba(212, 172, 64, 0.3)',
+              ...Platform.select({
+                ios: { shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12 },
+                android: { elevation: 8 },
+              }),
             }}>
-              <Text style={{ fontSize: 48 }}>👤</Text>
+              <Text style={{ fontSize: 32, fontWeight: '800', color: '#1e293b' }}>{getInitials()}</Text>
             </View>
 
-            {/* User Info */}
-            <Text style={{ 
-              fontSize: 24, 
-              fontWeight: '700', 
-              color: '#fff', 
-              marginBottom: 6,
-              textShadowColor: 'rgba(0, 0, 0, 0.3)',
-              textShadowOffset: { width: 0, height: 2 },
-              textShadowRadius: 4,
-            }}>
+            <Text style={{ fontSize: 22, fontWeight: '700', color: '#fff', marginBottom: 4 }}>
               {user?.companyName || 'Guest User'}
             </Text>
-            <Text style={{ fontSize: 15, color: 'rgba(255, 255, 255, 0.9)', marginBottom: 4 }}>
-              📱 {user?.phoneNumber || 'N/A'}
-            </Text>
-            {user?.gstNumber && (
-              <Text style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.8)' }}>
-                GST: {user.gstNumber}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+              <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#22c55e', marginRight: 6 }} />
+              <Text style={{ fontSize: 14, color: '#94a3b8' }}>
+                {user?.phoneNumber || 'N/A'}
               </Text>
-            )}
+            </View>
+            {user?.gstNumber ? (
+              <View style={{
+                marginTop: 10,
+                backgroundColor: 'rgba(212, 172, 64, 0.15)',
+                paddingHorizontal: 14,
+                paddingVertical: 5,
+                borderRadius: 20,
+              }}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: Colors.primary }}>
+                  GST: {user.gstNumber}
+                </Text>
+              </View>
+            ) : null}
           </View>
-        </LinearGradient>
+        </View>
+
+        {/* Quick Stats */}
+        <View style={{
+          backgroundColor: '#fff',
+          marginHorizontal: 20,
+          marginTop: -30,
+          borderRadius: 20,
+          padding: 18,
+          flexDirection: 'row',
+          ...Platform.select({
+            ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.08, shadowRadius: 16 },
+            android: { elevation: 6 },
+          }),
+        }}>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#eff6ff', justifyContent: 'center', alignItems: 'center', marginBottom: 6 }}>
+              <Text style={{ fontSize: 17 }}>📦</Text>
+            </View>
+            <Text style={{ fontSize: 11, color: '#94a3b8', fontWeight: '500' }}>Member</Text>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: '#1e293b', marginTop: 1 }}>Active</Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: '#f1f5f9', marginVertical: 4 }} />
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#ecfdf5', justifyContent: 'center', alignItems: 'center', marginBottom: 6 }}>
+              <Text style={{ fontSize: 17 }}>✅</Text>
+            </View>
+            <Text style={{ fontSize: 11, color: '#94a3b8', fontWeight: '500' }}>KYC</Text>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: user?.pan ? '#16a34a' : '#f59e0b', marginTop: 1 }}>
+              {user?.pan ? 'Verified' : 'Pending'}
+            </Text>
+          </View>
+          <View style={{ width: 1, backgroundColor: '#f1f5f9', marginVertical: 4 }} />
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#fef3c7', justifyContent: 'center', alignItems: 'center', marginBottom: 6 }}>
+              <Text style={{ fontSize: 17 }}>⭐</Text>
+            </View>
+            <Text style={{ fontSize: 11, color: '#94a3b8', fontWeight: '500' }}>Trust</Text>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: Colors.primary, marginTop: 1 }}>Gold</Text>
+          </View>
+        </View>
 
         {/* Company Details Card */}
         <View style={{
           backgroundColor: '#fff',
           marginHorizontal: 20,
-          marginTop: -20,
+          marginTop: 20,
           borderRadius: 20,
           padding: 20,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 12,
-          elevation: 6,
+          borderLeftWidth: 4,
+          borderLeftColor: Colors.primary,
+          ...Platform.select({
+            ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 10 },
+            android: { elevation: 3 },
+          }),
         }}>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: '#1f2937', marginBottom: 16 }}>
-            Company Details
-          </Text>
-          
-          {user?.companyAddress && (
-            <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-              <Text style={{ fontSize: 18, marginRight: 12 }}>📍</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>Address</Text>
-                <Text style={{ fontSize: 14, color: '#1f2937', lineHeight: 20 }}>
-                  {user.companyAddress}
-                </Text>
-              </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 18 }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#1e293b' }}>Company Details</Text>
+            <View style={{ marginLeft: 8, backgroundColor: '#f1f5f9', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+              <Text style={{ fontSize: 10, fontWeight: '600', color: '#64748b' }}>BUSINESS</Text>
             </View>
-          )}
+          </View>
 
-          {user?.pan && (
-            <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-              <Text style={{ fontSize: 18, marginRight: 12 }}>💳</Text>
+          {user?.companyAddress ? (
+            <InfoRow emoji="📍" label="Address" value={user.companyAddress} />
+          ) : null}
+          {user?.pan ? (
+            <InfoRow emoji="💳" label="PAN Number" value={user.pan} />
+          ) : null}
+          {user?.aadhar ? (
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+              <View style={{
+                width: 36, height: 36, borderRadius: 10, backgroundColor: '#f8fafc',
+                justifyContent: 'center', alignItems: 'center', marginRight: 12,
+              }}>
+                <Text style={{ fontSize: 16 }}>🆔</Text>
+              </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>PAN</Text>
-                <Text style={{ fontSize: 14, color: '#1f2937', fontWeight: '600' }}>
-                  {user.pan}
-                </Text>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 }}>Aadhar Number</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1e293b', marginTop: 2 }}>{user.aadhar}</Text>
               </View>
             </View>
-          )}
+          ) : null}
 
-          {user?.aadhar && (
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={{ fontSize: 18, marginRight: 12 }}>🆔</Text>
+          {!user?.companyAddress && !user?.pan && !user?.aadhar ? (
+            <TouchableOpacity
+              onPress={() => navigation.getParent()?.navigate('EditProfile')}
+              style={{
+                backgroundColor: '#fef3c7',
+                borderRadius: 12,
+                padding: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 22, marginRight: 12 }}>📝</Text>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>Aadhar</Text>
-                <Text style={{ fontSize: 14, color: '#1f2937', fontWeight: '600' }}>
-                  {user.aadhar}
-                </Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#92400e' }}>Complete Your Profile</Text>
+                <Text style={{ fontSize: 12, color: '#b45309', marginTop: 2 }}>Add address, PAN & Aadhar details</Text>
               </View>
-            </View>
-          )}
+              <Text style={{ fontSize: 16, color: '#d97706', fontWeight: '700' }}>›</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
-        {/* Menu Items */}
+        {/* Account Section */}
         <View style={{ marginTop: 24, marginHorizontal: 20 }}>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: '#1f2937', marginBottom: 12 }}>
-            Settings
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10, marginLeft: 4 }}>
+            Account
           </Text>
-          
           <View style={{
             backgroundColor: '#fff',
             borderRadius: 20,
             overflow: 'hidden',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 4,
+            ...Platform.select({
+              ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 10 },
+              android: { elevation: 3 },
+            }),
           }}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  padding: 16,
-                  borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
-                  borderBottomColor: '#f3f4f6',
-                }}
-                onPress={item.action}
-                activeOpacity={0.7}
-              >
-                <View style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 12,
-                  backgroundColor: '#fef3c7',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginRight: 12,
-                }}>
-                  <Text style={{ fontSize: 20 }}>{item.icon}</Text>
-                </View>
-                <Text style={{ 
-                  flex: 1, 
-                  fontSize: 15, 
-                  color: '#1f2937',
-                  fontWeight: '500'
-                }}>
-                  {item.label}
-                </Text>
-                <Text style={{ fontSize: 20, color: '#9ca3af' }}>›</Text>
-              </TouchableOpacity>
-            ))}
+            {accountItems.map((item, i) => renderMenuItem(item, i, accountItems))}
           </View>
         </View>
 
-        {/* Logout Button */}
-        <TouchableOpacity 
+        {/* Support Section */}
+        <View style={{ marginTop: 20, marginHorizontal: 20 }}>
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10, marginLeft: 4 }}>
+            Support & Legal
+          </Text>
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 20,
+            overflow: 'hidden',
+            ...Platform.select({
+              ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 10 },
+              android: { elevation: 3 },
+            }),
+          }}>
+            {supportItems.map((item, i) => renderMenuItem(item, i, supportItems))}
+          </View>
+        </View>
+
+        {/* Logout */}
+        <TouchableOpacity
           style={{
             marginHorizontal: 20,
-            marginTop: 24,
+            marginTop: 28,
+            backgroundColor: '#fff',
             borderRadius: 16,
-            overflow: 'hidden',
-            shadowColor: '#ef4444',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 6,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingVertical: 16,
+            borderWidth: 1.5,
+            borderColor: '#fecaca',
+            ...Platform.select({
+              ios: { shadowColor: '#ef4444', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8 },
+              android: { elevation: 2 },
+            }),
           }}
           onPress={handleLogout}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
-          <LinearGradient
-            colors={['#ef4444', '#dc2626']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              paddingVertical: 16,
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>
-              🚪 Logout
-            </Text>
-          </LinearGradient>
+          <Text style={{ fontSize: 18, marginRight: 8 }}>🚪</Text>
+          <Text style={{ fontSize: 15, fontWeight: '700', color: '#ef4444' }}>Logout</Text>
         </TouchableOpacity>
 
-        {/* App Info */}
+        {/* Footer */}
         <View style={{ alignItems: 'center', marginTop: 32 }}>
           <View style={{
             backgroundColor: '#fff',
-            padding: 16,
-            borderRadius: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 4,
+            padding: 12,
+            borderRadius: 14,
+            ...Platform.select({
+              ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8 },
+              android: { elevation: 2 },
+            }),
           }}>
-            <Image 
-              source={require('../../assets/images/logo.png')} 
-              style={{ width: 80, height: 50 }}
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={{ width: 70, height: 44 }}
               resizeMode="contain"
             />
           </View>
-          <Text style={{ fontSize: 16, fontWeight: '600', color: '#1f2937', marginTop: 12 }}>
-            SS Tracker
-          </Text>
-          <Text style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
-            Version 1.0.0
-          </Text>
-          <Text style={{ fontSize: 11, color: '#d1d5db', marginTop: 8 }}>
-            © 2026 SS Transport. All rights reserved.
+          <Text style={{ fontSize: 14, fontWeight: '600', color: '#475569', marginTop: 10 }}>SS Tracker</Text>
+          <Text style={{ fontSize: 11, color: '#cbd5e1', marginTop: 3 }}>Version 1.0.0</Text>
+          <Text style={{ fontSize: 10, color: '#e2e8f0', marginTop: 6, marginBottom: 8 }}>
+            Powered by movesure.io
           </Text>
         </View>
       </ScrollView>

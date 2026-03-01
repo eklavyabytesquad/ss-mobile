@@ -1,10 +1,105 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl, Linking, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator, RefreshControl, Linking, Alert, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { getBiltyStats, getRecentBilty } from '../../utils/biltyService';
 import styles from './styles/home.styles';
 import Colors from '../../constants/colors';
+
+// ── Offer Banner Component ──
+const OfferBanner = () => {
+  const handleRateUs = () => {
+    const storeUrl = Platform.OS === 'ios'
+      ? 'https://apps.apple.com/app/id000000000' // replace with real id
+      : 'https://play.google.com/store/apps/details?id=com.sstransport.tracker';
+    Alert.alert(
+      '⭐ Rate SS Transport',
+      'Rate us 5 stars on the store and get toll tax waived on your next consignment!',
+      [
+        { text: 'Later', style: 'cancel' },
+        { text: 'Rate Now ⭐', onPress: () => Linking.openURL(storeUrl) },
+      ]
+    );
+  };
+
+  return (
+    <View style={{
+      marginHorizontal: 16,
+      marginTop: 16,
+      borderRadius: 16,
+      overflow: 'hidden',
+    }}>
+      <View style={{
+        backgroundColor: '#1e293b',
+        borderRadius: 16,
+        padding: 18,
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}>
+        <View style={{ flex: 1, marginRight: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+            <View style={{ backgroundColor: '#fbbf24', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, marginRight: 8 }}>
+              <Text style={{ fontSize: 9, fontWeight: '800', color: '#1e293b', letterSpacing: 0.5 }}>OFFER</Text>
+            </View>
+            <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>Limited Time</Text>
+          </View>
+          <Text style={{ fontSize: 17, fontWeight: '800', color: '#fff', marginBottom: 6, lineHeight: 22 }}>
+            Rate Us & Get Toll Tax Free! 🎉
+          </Text>
+          <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', lineHeight: 18 }}>
+            Rate us 5 stars and enjoy toll charge waiver on your next consignment
+          </Text>
+          <TouchableOpacity
+            onPress={handleRateUs}
+            style={{
+              backgroundColor: '#fbbf24',
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              borderRadius: 10,
+              alignSelf: 'flex-start',
+              marginTop: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 14, fontWeight: '800', color: '#1e293b' }}>⭐ Rate Us Now</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: 'rgba(251,191,36,0.15)', justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ fontSize: 32 }}>🏷️</Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+// ── Stat Card Component ──
+const StatCard = ({ stat, index }) => (
+  <View style={{
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    width: '47%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  }}>
+    <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: stat.bgColor, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+      {stat.isPng ? (
+        <Image source={stat.icon} style={{ width: 24, height: 24, tintColor: stat.tint }} />
+      ) : (
+        <Text style={{ fontSize: 20 }}>{stat.icon}</Text>
+      )}
+    </View>
+    <Text style={{ fontSize: 26, fontWeight: '800', color: '#1e293b' }}>{stat.value}</Text>
+    <Text style={{ fontSize: 11, color: '#64748b', marginTop: 4, fontWeight: '500', textAlign: 'center' }}>{stat.label}</Text>
+  </View>
+);
 
 export default function DashboardHome() {
   const navigation = useNavigation();
@@ -52,10 +147,10 @@ export default function DashboardHome() {
   };
 
   const statsData = [
-    { label: 'Total Bilties', value: stats.total.toString(), icon: require('../../assets/images/shipping-box.png'), isPng: true, color: '#8b5cf6' },
-    { label: 'In Transit', value: stats.inTransit.toString(), icon: require('../../assets/images/truck.png'), isPng: true, color: '#3b82f6' },
-    { label: 'Delivered', value: stats.delivered.toString(), icon: '✅', isPng: false, color: '#10b981' },
-    { label: 'At Hub', value: stats.atHub.toString(), icon: require('../../assets/images/warehosue.png'), isPng: true, color: '#f59e0b' },
+    { label: 'Total Bilties', value: stats.total.toString(), icon: require('../../assets/images/shipping-box.png'), isPng: true, bgColor: '#fef3c7', tint: '#d4ac40' },
+    { label: 'In Transit', value: stats.inTransit.toString(), icon: require('../../assets/images/truck.png'), isPng: true, bgColor: '#dbeafe', tint: '#3b82f6' },
+    { label: 'Delivered', value: stats.delivered.toString(), icon: '✅', isPng: false, bgColor: '#dcfce7', tint: '#16a34a' },
+    { label: 'At Hub', value: stats.atHub.toString(), icon: require('../../assets/images/warehosue.png'), isPng: true, bgColor: '#fef9c3', tint: '#f59e0b' },
   ];
 
   const getStatusFromSavingOption = (savingOption) => {
@@ -70,10 +165,10 @@ export default function DashboardHome() {
 
   const getStatusStyle = (status) => {
     switch(status) {
-      case 'Delivered': return { bg: '#dcfce7', color: '#166534' };
-      case 'In Transit': return { bg: '#dbeafe', color: '#1e40af' };
-      case 'At Hub': return { bg: '#fef3c7', color: '#92400e' };
-      default: return { bg: '#f3f4f6', color: '#6b7280' };
+      case 'Delivered': return { bg: '#dcfce7', color: '#166534', dot: '#16a34a' };
+      case 'In Transit': return { bg: '#dbeafe', color: '#1e40af', dot: '#3b82f6' };
+      case 'At Hub': return { bg: '#fef3c7', color: '#92400e', dot: '#f59e0b' };
+      default: return { bg: '#f3f4f6', color: '#6b7280', dot: '#9ca3af' };
     }
   };
 
@@ -104,6 +199,13 @@ export default function DashboardHome() {
     );
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
   return (
     <ScrollView 
       style={styles.container} 
@@ -111,18 +213,24 @@ export default function DashboardHome() {
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />}
     >
+      {/* ── Header ── */}
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View>
-            <Text style={styles.greeting}>Hello!</Text>
-            <Text style={styles.phoneNumber}>{user?.companyName || 'Guest'}</Text>
-            <Text style={{ fontSize: 12, color: Colors.textSecondary, marginTop: 2 }}>{user?.phoneNumber || ''}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '500' }}>{getGreeting()} 👋</Text>
+            <Text style={{ fontSize: 22, fontWeight: '800', color: '#fff', marginTop: 4 }} numberOfLines={1}>
+              {user?.companyName || 'Guest'}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#34d399', marginRight: 6 }} />
+              <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{user?.phoneNumber || ''}</Text>
+            </View>
           </View>
           <View style={{ 
-            backgroundColor: Colors.background, 
-            padding: 10, 
-            borderRadius: 12,
-            shadowColor: Colors.shadow,
+            backgroundColor: '#fff', 
+            padding: 8, 
+            borderRadius: 14,
+            shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.15,
             shadowRadius: 6,
@@ -130,7 +238,7 @@ export default function DashboardHome() {
           }}>
             <Image 
               source={require('../../assets/images/logo.png')} 
-              style={{ width: 100, height: 65 }}
+              style={{ width: 80, height: 50 }}
               resizeMode="contain"
             />
           </View>
@@ -140,39 +248,72 @@ export default function DashboardHome() {
       {isLoading ? (
         <View style={{ padding: 40, alignItems: 'center' }}>
           <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={{ marginTop: 10, color: Colors.textSecondary }}>Loading...</Text>
+          <Text style={{ marginTop: 10, color: Colors.textSecondary }}>Loading dashboard...</Text>
         </View>
       ) : (
         <>
+          {/* ── Stats Grid ── */}
           <View style={styles.statsContainer}>
             {statsData.map((stat, index) => (
-              <View key={index} style={[styles.statCard, { borderTopWidth: 3, borderTopColor: Colors.primary }]}>
-                {stat.isPng ? (
-                  <Image source={stat.icon} style={{ width: 32, height: 32, tintColor: Colors.primary, marginBottom: 8 }} />
-                ) : (
-                  <Text style={styles.statIcon}>{stat.icon}</Text>
-                )}
-                <Text style={[styles.statValue, { color: Colors.primary }]}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
-              </View>
+              <StatCard key={index} stat={stat} index={index} />
             ))}
           </View>
 
-          <View style={styles.section}>
-            <View style={{ marginBottom: 16 }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: Colors.text, marginBottom: 4 }}>Your Consignments</Text>
-              <Text style={{ fontSize: 13, color: Colors.textSecondary }}>Recent {recentShipments.length} shipment{recentShipments.length !== 1 ? 's' : ''}</Text>
-            </View>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Latest Activity</Text>
-              <TouchableOpacity onPress={() => navigation?.navigate('History')}>
-                <Text style={styles.viewAllText}>View All</Text>
+          {/* ── Offer Banner ── */}
+          <OfferBanner />
+
+          {/* ── Quick Actions ── */}
+          <View style={{ paddingHorizontal: 16, marginTop: 20 }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#1e293b', marginBottom: 12 }}>Quick Actions</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+              {[
+                { icon: '🔍', label: 'Track', onPress: () => navigation?.navigate('Tracking'), bg: '#dbeafe', border: '#93c5fd' },
+                { icon: '', label: 'Rates', onPress: () => navigation?.navigate('CityRates'), bg: '#dcfce7', border: '#a7f3d0' },
+                { icon: '📞', label: 'Support', onPress: handleCallSupport, bg: '#fce7f3', border: '#f9a8d4' },
+                { icon: '📋', label: 'History', onPress: () => navigation?.navigate('History'), bg: '#f1f5f9', border: '#cbd5e1' },
+              ].map((action, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={action.onPress}
+                  style={{
+                    backgroundColor: action.bg,
+                    borderRadius: 14,
+                    paddingVertical: 14,
+                    paddingHorizontal: 20,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: action.border,
+                  }}
+                >
+                  <Text style={{ fontSize: 18, marginRight: 8 }}>{action.icon}</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#1e293b' }}>{action.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* ── Recent Shipments ── */}
+          <View style={{ paddingHorizontal: 16, marginTop: 24 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: '#1e293b' }}>Recent Consignments</Text>
+                <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                  {recentShipments.length} latest shipment{recentShipments.length !== 1 ? 's' : ''}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => navigation?.navigate('History')}
+                style={{ backgroundColor: '#f1f5f9', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10 }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#475569' }}>View All</Text>
               </TouchableOpacity>
             </View>
 
             {recentShipments.length === 0 ? (
-              <View style={{ padding: 20, alignItems: 'center' }}>
-                <Text style={{ color: Colors.textSecondary }}>No shipments found</Text>
+              <View style={{ padding: 30, alignItems: 'center', backgroundColor: '#fff', borderRadius: 16 }}>
+                <Text style={{ fontSize: 40, marginBottom: 10 }}>📦</Text>
+                <Text style={{ color: '#94a3b8', fontSize: 14 }}>No shipments found</Text>
               </View>
             ) : (
               recentShipments.map((shipment, index) => {
@@ -183,65 +324,93 @@ export default function DashboardHome() {
                     key={shipment.id || index} 
                     style={{
                       backgroundColor: '#fff',
-                      borderRadius: 12,
-                      padding: 16,
-                      marginBottom: 12,
-                      borderLeftWidth: 4,
-                      borderLeftColor: Colors.primary,
+                      borderRadius: 18,
+                      marginBottom: 14,
                       shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.08,
-                      shadowRadius: 8,
+                      shadowOffset: { width: 0, height: 3 },
+                      shadowOpacity: 0.07,
+                      shadowRadius: 10,
                       elevation: 3,
+                      overflow: 'hidden',
                     }}
                     onPress={() => navigateToBiltyDetails(shipment)}
+                    activeOpacity={0.7}
                   >
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.text, marginBottom: 4 }}>
-                          {shipment.gr_no}
-                        </Text>
-                        <Text style={{ fontSize: 12, color: Colors.textSecondary, marginBottom: 2 }}>
-                          To: {shipment.consignee_name || 'N/A'}
-                        </Text>
-                        <Text style={{ fontSize: 13, color: Colors.textSecondary }}>
-                          {formatDate(shipment.bilty_date)}
-                        </Text>
-                      </View>
-                      <View style={{ backgroundColor: statusStyle.bg, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '600', color: statusStyle.color }}>{status}</Text>
-                      </View>
-                    </View>
-                    
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 11, color: Colors.textSecondary, marginBottom: 2 }}>FROM</Text>
-                        <Text style={{ fontSize: 14, fontWeight: '600', color: Colors.text }} numberOfLines={1}>
-                          {shipment.from_city_name || 'N/A'}
-                        </Text>
-                      </View>
-                      <Text style={{ fontSize: 18, color: Colors.primary, marginHorizontal: 12 }}>→</Text>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 11, color: Colors.textSecondary, marginBottom: 2 }}>TO</Text>
-                        <Text style={{ fontSize: 14, fontWeight: '600', color: Colors.text }} numberOfLines={1}>
-                          {shipment.to_city_name || 'N/A'}
-                        </Text>
-                      </View>
-                    </View>
+                    {/* Status Strip at Top */}
+                    <View style={{ height: 3, backgroundColor: statusStyle.dot }} />
 
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f0f0f0' }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 12, color: Colors.textSecondary }}>📦 {shipment.no_of_pkg || 0} Pkg</Text>
-                        {shipment.wt && (
-                          <>
-                            <Text style={{ fontSize: 12, color: Colors.textSecondary, marginHorizontal: 8 }}>•</Text>
-                            <Text style={{ fontSize: 12, color: Colors.textSecondary }}>{shipment.wt} Kg</Text>
-                          </>
-                        )}
+                    <View style={{ padding: 16 }}>
+                      {/* Top Row: GR + Status + Amount */}
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                          <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: statusStyle.bg, justifyContent: 'center', alignItems: 'center', marginRight: 10 }}>
+                            <Text style={{ fontSize: 18 }}>📦</Text>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                              <Text style={{ fontSize: 16, fontWeight: '800', color: '#1e293b', letterSpacing: 0.3 }}>
+                                {shipment.gr_no}
+                              </Text>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: statusStyle.bg, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, marginLeft: 8 }}>
+                                <View style={{ width: 5, height: 5, borderRadius: 2.5, backgroundColor: statusStyle.dot, marginRight: 4 }} />
+                                <Text style={{ fontSize: 9, fontWeight: '700', color: statusStyle.color }}>{status}</Text>
+                              </View>
+                            </View>
+                            <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>
+                              {formatDate(shipment.bilty_date)}
+                              {shipment.consignee_name ? ` • To: ${shipment.consignee_name}` : ''}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={{ alignItems: 'flex-end', marginLeft: 8 }}>
+                          <Text style={{ fontSize: 16, fontWeight: '800', color: Colors.primary }}>
+                            ₹{shipment.total || 0}
+                          </Text>
+                        </View>
                       </View>
-                      <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.primary }}>
-                        ₹{shipment.total || 0}
-                      </Text>
+                      
+                      {/* Route Row */}
+                      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f8fafc', borderRadius: 12, padding: 12 }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 9, color: '#94a3b8', fontWeight: '700', letterSpacing: 0.5 }}>FROM</Text>
+                          <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', marginTop: 3 }} numberOfLines={1}>
+                            {shipment.from_city_name || 'N/A'}
+                          </Text>
+                        </View>
+                        <View style={{ alignItems: 'center', marginHorizontal: 10 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{ width: 16, height: 2, backgroundColor: '#cbd5e1', borderRadius: 1 }} />
+                            <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center', marginHorizontal: 4 }}>
+                              <Text style={{ fontSize: 10, color: '#fff' }}>→</Text>
+                            </View>
+                            <View style={{ width: 16, height: 2, backgroundColor: '#cbd5e1', borderRadius: 1 }} />
+                          </View>
+                        </View>
+                        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                          <Text style={{ fontSize: 9, color: '#94a3b8', fontWeight: '700', letterSpacing: 0.5 }}>TO</Text>
+                          <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', marginTop: 3 }} numberOfLines={1}>
+                            {shipment.to_city_name || 'N/A'}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Bottom Row: Packages + Weight */}
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, justifyContent: 'space-between' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginRight: 8 }}>
+                            <Text style={{ fontSize: 11, color: '#475569', fontWeight: '600' }}>📦 {shipment.no_of_pkg || 0} Pkg</Text>
+                          </View>
+                          {shipment.wt ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                              <Text style={{ fontSize: 11, color: '#475569', fontWeight: '600' }}>⚖️ {shipment.wt} Kg</Text>
+                            </View>
+                          ) : null}
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Text style={{ fontSize: 11, color: '#94a3b8', marginRight: 4 }}>Details</Text>
+                          <Text style={{ fontSize: 12, color: '#94a3b8' }}>›</Text>
+                        </View>
+                      </View>
                     </View>
                   </TouchableOpacity>
                 );
@@ -249,26 +418,9 @@ export default function DashboardHome() {
             )}
           </View>
 
-          <View style={styles.quickActions}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-            <View style={styles.actionsGrid}>
-              <TouchableOpacity style={styles.actionButton} onPress={() => navigation.getParent()?.navigate('PrintBilty')}>
-                <Text style={styles.actionIcon}>🖨️</Text>
-                <Text style={styles.actionText}>Print Bilty</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} onPress={() => navigation?.navigate('Tracking')}>
-                <Text style={styles.actionIcon}>🔍</Text>
-                <Text style={styles.actionText}>Track</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} onPress={handleCallSupport}>
-                <Text style={styles.actionIcon}>📞</Text>
-                <Text style={styles.actionText}>Support</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} onPress={() => navigation?.navigate('CityRates')}>
-                <Text style={styles.actionIcon}>💰</Text>
-                <Text style={styles.actionText}>Rates</Text>
-              </TouchableOpacity>
-            </View>
+          {/* ── Powered By Footer ── */}
+          <View style={{ alignItems: 'center', marginTop: 20, marginBottom: 10 }}>
+            <Text style={{ fontSize: 11, color: '#cbd5e1', letterSpacing: 0.3 }}>Powered by movesure.io</Text>
           </View>
         </>
       )}

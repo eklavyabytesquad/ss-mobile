@@ -1,102 +1,102 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Platform, Keyboard, KeyboardAvoidingView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../utils/supabase';
+import supabase from '../../utils/supabase';
 import Colors from '../../constants/colors';
 
 export default function EditProfile() {
   const navigation = useNavigation();
   const { user, updateUserData } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     companyAddress: user?.companyAddress || '',
     pan: user?.pan || '',
     aadhar: user?.aadhar || '',
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
+
+  const panRef = useRef(null);
+  const aadharRef = useRef(null);
+
+  const getInitials = () => {
+    if (!user?.companyName) return '?';
+    return user.companyName
+      .split(' ')
+      .map(w => w[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const handleUpdate = async () => {
-    // Validation
+    Keyboard.dismiss();
+
     if (!formData.companyAddress.trim()) {
-      Alert.alert('Validation Error', 'Company address is required');
+      Alert.alert('Missing Field', 'Please enter your company address');
       return;
     }
-
     if (!formData.pan.trim()) {
-      Alert.alert('Validation Error', 'PAN card number is required');
+      Alert.alert('Missing Field', 'Please enter your PAN card number');
       return;
     }
-
     if (!formData.aadhar.trim()) {
-      Alert.alert('Validation Error', 'Aadhar number is required');
+      Alert.alert('Missing Field', 'Please enter your Aadhar number');
       return;
     }
 
-    // Validate PAN format (10 alphanumeric characters)
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     if (!panRegex.test(formData.pan.toUpperCase())) {
-      Alert.alert('Validation Error', 'Please enter a valid PAN card number (e.g., ABCDE1234F)');
+      Alert.alert('Invalid PAN', 'Please enter a valid PAN number\ne.g., ABCDE1234F');
       return;
     }
 
-    // Validate Aadhar format (12 digits)
     const aadharRegex = /^[0-9]{12}$/;
     if (!aadharRegex.test(formData.aadhar.replace(/\s/g, ''))) {
-      Alert.alert('Validation Error', 'Please enter a valid 12-digit Aadhar number');
+      Alert.alert('Invalid Aadhar', 'Please enter a valid 12-digit Aadhar number');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Update in consignors table
       const { data, error } = await supabase
         .from('consignors')
         .update({
-          company_address: formData.companyAddress.trim(),
+          company_add: formData.companyAddress.trim(),
           pan: formData.pan.toUpperCase().trim(),
-          aadhar: formData.aadhar.replace(/\s/g, '').trim(),
-          updated_at: new Date().toISOString(),
+          adhar: formData.aadhar.replace(/\s/g, '').trim(),
         })
-        .eq('phone_number', user.phoneNumber)
+        .eq('number', user.phoneNumber)
         .select()
         .single();
 
       if (error) throw error;
 
-      // Update local user context
       await updateUserData({
         companyAddress: formData.companyAddress.trim(),
         pan: formData.pan.toUpperCase().trim(),
         aadhar: formData.aadhar.replace(/\s/g, '').trim(),
       });
 
+
       Alert.alert(
-        'Success',
-        'Profile updated successfully!',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]
+        '✅ Profile Updated',
+        'Your details have been saved successfully!',
+        [{ text: 'Done', onPress: () => navigation.goBack() }]
       );
     } catch (error) {
       console.error('Update error:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      Alert.alert('Update Failed', 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const formatAadhar = (text) => {
-    // Remove all non-digits
     const cleaned = text.replace(/\D/g, '');
-    // Limit to 12 digits
     const limited = cleaned.slice(0, 12);
-    // Format as XXXX XXXX XXXX
     const formatted = limited.replace(/(\d{4})(\d{4})(\d{0,4})/, (match, p1, p2, p3) => {
       let result = p1;
       if (p2) result += ' ' + p2;
@@ -106,266 +106,379 @@ export default function EditProfile() {
     return formatted;
   };
 
+  const getFieldStatus = (field) => {
+    const value = formData[field];
+    if (!value || !value.trim()) return 'empty';
+    if (field === 'pan') {
+      return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(value.toUpperCase()) ? 'valid' : 'invalid';
+    }
+    if (field === 'aadhar') {
+      return /^[0-9]{12}$/.test(value.replace(/\s/g, '')) ? 'valid' : 'invalid';
+    }
+    return value.trim().length > 5 ? 'valid' : 'empty';
+  };
+
+  const getFieldBorderColor = (field) => {
+    if (focusedField === field) return Colors.primary;
+    const status = getFieldStatus(field);
+    if (status === 'valid') return '#22c55e';
+    if (status === 'invalid') return '#ef4444';
+    return '#e2e8f0';
+  };
+
+  const StatusDot = ({ field }) => {
+    const status = getFieldStatus(field);
+    if (status === 'empty') return null;
+    return (
+      <View style={{
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        backgroundColor: status === 'valid' ? '#dcfce7' : '#fef2f2',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 8,
+      }}>
+        <Text style={{ fontSize: 10, color: status === 'valid' ? '#16a34a' : '#ef4444' }}>
+          {status === 'valid' ? '✓' : '!'}
+        </Text>
+      </View>
+    );
+  };
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
-      <LinearGradient
-        colors={[Colors.primary, '#b8922e', Colors.primary]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{
-          paddingTop: 60,
-          paddingBottom: 20,
-          paddingHorizontal: 20,
-        }}
-      >
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
+      {/* Header */}
+      <View style={{
+        backgroundColor: '#1e293b',
+        paddingTop: Platform.OS === 'ios' ? 58 : 46,
+        paddingBottom: 28,
+        paddingHorizontal: 20,
+        borderBottomLeftRadius: 28,
+        borderBottomRightRadius: 28,
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: 'rgba(255,255,255,0.2)',
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: 'rgba(255,255,255,0.1)',
               justifyContent: 'center',
               alignItems: 'center',
             }}
+            activeOpacity={0.7}
           >
-            <Text style={{ color: '#fff', fontSize: 24 }}>←</Text>
+            <Text style={{ color: '#fff', fontSize: 20 }}>‹</Text>
           </TouchableOpacity>
-          <Text style={{
-            fontSize: 22,
-            fontWeight: '700',
-            color: '#fff',
-            marginLeft: 16,
-          }}>
+          <Text style={{ fontSize: 18, fontWeight: '700', color: '#fff', marginLeft: 14 }}>
             Edit Profile
           </Text>
         </View>
-      </LinearGradient>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        {/* Profile Mini Card */}
+        <View style={{
+          backgroundColor: 'rgba(255,255,255,0.08)',
+          borderRadius: 16,
+          padding: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}>
+          <View style={{
+            width: 52,
+            height: 52,
+            borderRadius: 16,
+            backgroundColor: Colors.primary,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: 14,
+          }}>
+            <Text style={{ fontSize: 20, fontWeight: '800', color: '#1e293b' }}>{getInitials()}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#fff' }}>
+              {user?.companyName || 'Guest'}
+            </Text>
+            <Text style={{ fontSize: 13, color: '#94a3b8', marginTop: 2 }}>
+              📱 {user?.phoneNumber || 'N/A'}
+            </Text>
+          </View>
+          <View style={{
+            backgroundColor: 'rgba(34, 197, 94, 0.15)',
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderRadius: 8,
+          }}>
+            <Text style={{ fontSize: 10, fontWeight: '700', color: '#22c55e' }}>ACTIVE</Text>
+          </View>
+        </View>
+      </View>
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={{ padding: 20 }}>
-          {/* Info Card */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Info Banner */}
           <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 16,
-            padding: 20,
+            backgroundColor: '#eff6ff',
+            borderRadius: 14,
+            padding: 14,
+            flexDirection: 'row',
+            alignItems: 'center',
             marginBottom: 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 4,
+            borderWidth: 1,
+            borderColor: '#dbeafe',
           }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-              <Text style={{ fontSize: 20, marginRight: 8 }}>ℹ️</Text>
-              <Text style={{ fontSize: 16, fontWeight: '600', color: '#1f2937' }}>
-                Profile Information
+            <View style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              backgroundColor: '#dbeafe',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: 12,
+            }}>
+              <Text style={{ fontSize: 16 }}>💡</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: '#1e40af' }}>
+                Keep your details updated
+              </Text>
+              <Text style={{ fontSize: 11, color: '#3b82f6', marginTop: 2 }}>
+                Required for KYC verification & billing
               </Text>
             </View>
-            <Text style={{ fontSize: 13, color: '#6b7280', lineHeight: 20 }}>
-              Update your company address, PAN card, and Aadhar details. All fields are required for verification purposes.
+          </View>
+
+          {/* Company Address */}
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 18,
+            padding: 18,
+            marginBottom: 14,
+            borderWidth: 1.5,
+            borderColor: getFieldBorderColor('companyAddress'),
+            ...Platform.select({
+              ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8 },
+              android: { elevation: 2 },
+            }),
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+              <View style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                backgroundColor: '#fef3c7',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: 10,
+              }}>
+                <Text style={{ fontSize: 15 }}>📍</Text>
+              </View>
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', flex: 1 }}>Company Address</Text>
+              <StatusDot field="companyAddress" />
+            </View>
+            <TextInput
+              style={{
+                backgroundColor: '#f8fafc',
+                borderRadius: 12,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                fontSize: 14,
+                color: '#1e293b',
+                borderWidth: 1,
+                borderColor: focusedField === 'companyAddress' ? 'rgba(212,172,64,0.3)' : '#f1f5f9',
+                minHeight: 80,
+                textAlignVertical: 'top',
+                lineHeight: 20,
+              }}
+              placeholder="Enter your complete company address"
+              placeholderTextColor="#cbd5e1"
+              value={formData.companyAddress}
+              onChangeText={(text) => setFormData({ ...formData, companyAddress: text })}
+              onFocus={() => setFocusedField('companyAddress')}
+              onBlur={() => setFocusedField(null)}
+              multiline
+              numberOfLines={3}
+              returnKeyType="next"
+              blurOnSubmit={true}
+              onSubmitEditing={() => panRef.current?.focus()}
+            />
+          </View>
+
+          {/* PAN Card */}
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 18,
+            padding: 18,
+            marginBottom: 14,
+            borderWidth: 1.5,
+            borderColor: getFieldBorderColor('pan'),
+            ...Platform.select({
+              ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8 },
+              android: { elevation: 2 },
+            }),
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+              <View style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                backgroundColor: '#ede9fe',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: 10,
+              }}>
+                <Text style={{ fontSize: 15 }}>💳</Text>
+              </View>
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', flex: 1 }}>PAN Card Number</Text>
+              <StatusDot field="pan" />
+            </View>
+            <TextInput
+              ref={panRef}
+              style={{
+                backgroundColor: '#f8fafc',
+                borderRadius: 12,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                fontSize: 15,
+                color: '#1e293b',
+                borderWidth: 1,
+                borderColor: focusedField === 'pan' ? 'rgba(212,172,64,0.3)' : '#f1f5f9',
+                fontWeight: '600',
+                letterSpacing: 1.5,
+              }}
+              placeholder="ABCDE1234F"
+              placeholderTextColor="#cbd5e1"
+              value={formData.pan}
+              onChangeText={(text) => setFormData({ ...formData, pan: text.toUpperCase() })}
+              onFocus={() => setFocusedField('pan')}
+              onBlur={() => setFocusedField(null)}
+              maxLength={10}
+              autoCapitalize="characters"
+              returnKeyType="next"
+              onSubmitEditing={() => aadharRef.current?.focus()}
+            />
+            <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 6, marginLeft: 2 }}>
+              Format: 5 letters + 4 digits + 1 letter
             </Text>
           </View>
 
-          {/* Company Details */}
+          {/* Aadhar Number */}
           <View style={{
             backgroundColor: '#fff',
-            borderRadius: 16,
-            padding: 20,
-            marginBottom: 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 4,
+            borderRadius: 18,
+            padding: 18,
+            marginBottom: 24,
+            borderWidth: 1.5,
+            borderColor: getFieldBorderColor('aadhar'),
+            ...Platform.select({
+              ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8 },
+              android: { elevation: 2 },
+            }),
           }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <Text style={{ fontSize: 18, marginRight: 8 }}>🏢</Text>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#6b7280' }}>
-                Company Name
-              </Text>
-            </View>
-            <Text style={{ fontSize: 16, color: '#1f2937', fontWeight: '600', marginBottom: 16 }}>
-              {user?.companyName}
-            </Text>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <Text style={{ fontSize: 18, marginRight: 8 }}>📱</Text>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#6b7280' }}>
-                Phone Number
-              </Text>
-            </View>
-            <Text style={{ fontSize: 16, color: '#1f2937', fontWeight: '600' }}>
-              {user?.phoneNumber}
-            </Text>
-          </View>
-
-          {/* Editable Fields */}
-          <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 16,
-            padding: 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 8,
-            elevation: 4,
-          }}>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: '#1f2937', marginBottom: 20 }}>
-              Update Details
-            </Text>
-
-            {/* Company Address */}
-            <View style={{ marginBottom: 20 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 18, marginRight: 8 }}>📍</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1f2937' }}>
-                  Company Address
-                </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+              <View style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                backgroundColor: '#ecfdf5',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginRight: 10,
+              }}>
+                <Text style={{ fontSize: 15 }}>🆔</Text>
               </View>
-              <TextInput
-                style={{
-                  backgroundColor: '#f9fafb',
-                  borderRadius: 12,
-                  padding: 14,
-                  fontSize: 15,
-                  color: '#1f2937',
-                  borderWidth: 1,
-                  borderColor: '#e5e7eb',
-                  minHeight: 80,
-                  textAlignVertical: 'top',
-                }}
-                placeholder="Enter complete company address"
-                placeholderTextColor="#9ca3af"
-                value={formData.companyAddress}
-                onChangeText={(text) => setFormData({ ...formData, companyAddress: text })}
-                multiline
-                numberOfLines={3}
-              />
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#1e293b', flex: 1 }}>Aadhar Number</Text>
+              <StatusDot field="aadhar" />
             </View>
-
-            {/* PAN Card */}
-            <View style={{ marginBottom: 20 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 18, marginRight: 8 }}>💳</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1f2937' }}>
-                  PAN Card Number
-                </Text>
-              </View>
-              <TextInput
-                style={{
-                  backgroundColor: '#f9fafb',
-                  borderRadius: 12,
-                  padding: 14,
-                  fontSize: 15,
-                  color: '#1f2937',
-                  borderWidth: 1,
-                  borderColor: '#e5e7eb',
-                }}
-                placeholder="ABCDE1234F"
-                placeholderTextColor="#9ca3af"
-                value={formData.pan}
-                onChangeText={(text) => setFormData({ ...formData, pan: text.toUpperCase() })}
-                maxLength={10}
-                autoCapitalize="characters"
-              />
-              <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
-                10 characters (e.g., ABCDE1234F)
-              </Text>
-            </View>
-
-            {/* Aadhar Number */}
-            <View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 18, marginRight: 8 }}>🆔</Text>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#1f2937' }}>
-                  Aadhar Number
-                </Text>
-              </View>
-              <TextInput
-                style={{
-                  backgroundColor: '#f9fafb',
-                  borderRadius: 12,
-                  padding: 14,
-                  fontSize: 15,
-                  color: '#1f2937',
-                  borderWidth: 1,
-                  borderColor: '#e5e7eb',
-                }}
-                placeholder="1234 5678 9012"
-                placeholderTextColor="#9ca3af"
-                value={formData.aadhar}
-                onChangeText={(text) => setFormData({ ...formData, aadhar: formatAadhar(text) })}
-                keyboardType="number-pad"
-                maxLength={14}
-              />
-              <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
-                12 digits (e.g., 1234 5678 9012)
-              </Text>
-            </View>
+            <TextInput
+              ref={aadharRef}
+              style={{
+                backgroundColor: '#f8fafc',
+                borderRadius: 12,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                fontSize: 15,
+                color: '#1e293b',
+                borderWidth: 1,
+                borderColor: focusedField === 'aadhar' ? 'rgba(212,172,64,0.3)' : '#f1f5f9',
+                fontWeight: '600',
+                letterSpacing: 2,
+              }}
+              placeholder="1234 5678 9012"
+              placeholderTextColor="#cbd5e1"
+              value={formData.aadhar}
+              onChangeText={(text) => setFormData({ ...formData, aadhar: formatAadhar(text) })}
+              onFocus={() => setFocusedField('aadhar')}
+              onBlur={() => setFocusedField(null)}
+              keyboardType="number-pad"
+              maxLength={14}
+              returnKeyType="done"
+              onSubmitEditing={() => Keyboard.dismiss()}
+            />
+            <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 6, marginLeft: 2 }}>
+              12 digit unique identity number
+            </Text>
           </View>
 
           {/* Update Button */}
           <TouchableOpacity
             style={{
-              marginTop: 24,
+              backgroundColor: Colors.primary,
               borderRadius: 16,
-              overflow: 'hidden',
-              shadowColor: Colors.primary,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 6,
+              paddingVertical: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'row',
               opacity: isLoading ? 0.7 : 1,
+              ...Platform.select({
+                ios: { shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10 },
+                android: { elevation: 6 },
+              }),
             }}
             onPress={handleUpdate}
             disabled={isLoading}
             activeOpacity={0.8}
           >
-            <LinearGradient
-              colors={[Colors.primary, '#b8922e', Colors.primary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                paddingVertical: 16,
-                alignItems: 'center',
-                flexDirection: 'row',
-                justifyContent: 'center',
-              }}
-            >
-              {isLoading ? (
-                <>
-                  <ActivityIndicator color="#fff" size="small" />
-                  <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', marginLeft: 8 }}>
-                    Updating...
-                  </Text>
-                </>
-              ) : (
-                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>
-                  ✓ Update Profile
+            {isLoading ? (
+              <>
+                <ActivityIndicator color="#fff" size="small" />
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', marginLeft: 10 }}>
+                  Saving...
                 </Text>
-              )}
-            </LinearGradient>
+              </>
+            ) : (
+              <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>
+                ✓  Save Changes
+              </Text>
+            )}
           </TouchableOpacity>
 
+          {/* Cancel */}
           <TouchableOpacity
             style={{
               marginTop: 12,
-              paddingVertical: 16,
+              paddingVertical: 14,
               alignItems: 'center',
+              borderRadius: 14,
+              backgroundColor: '#fff',
+              borderWidth: 1,
+              borderColor: '#e2e8f0',
             }}
             onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
           >
-            <Text style={{ color: '#6b7280', fontSize: 15, fontWeight: '600' }}>
-              Cancel
-            </Text>
+            <Text style={{ color: '#64748b', fontSize: 15, fontWeight: '600' }}>Cancel</Text>
           </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
