@@ -5,12 +5,17 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { TransporterAuthProvider, useTransporterAuth } from '../context/TransporterAuthContext';
+import { StaffAuthProvider, useStaffAuth } from '../context/StaffAuthContext';
 import SplashScreen from '../pages/splash';
 import HomeScreen from '../pages/index';
 import LoginScreen from '../pages/login';
 import TransporterLoginScreen from '../pages/transporter-login';
+import StaffLoginScreen from '../pages/staff-login';
 import DashboardLayout from '../dashboard/_layout';
 import TransporterDashboardLayout from '../transporter-dashboard/_layout';
+import StaffDashboardLayout from '../staff-dashboard/_layout';
+import StaffBiltyDetails from '../staff-dashboard/pages/bilty-details';
+import TransporterBiltyDetails from '../transporter-dashboard/pages/bilty-details';
 import BiltyDetails from '../dashboard/pages/bilty-details';
 import EditProfile from '../dashboard/pages/edit-profile';
 import PrintBilty from '../dashboard/pages/print-bilty';
@@ -38,9 +43,10 @@ const loadingStyles = StyleSheet.create({
 function AppNavigator() {
   const { isLoggedIn: isConsignorLoggedIn, isLoading: isConsignorLoading } = useAuth();
   const { isLoggedIn: isTransporterLoggedIn, isLoading: isTransporterLoading } = useTransporterAuth();
+  const { isLoggedIn: isStaffLoggedIn, isLoading: isStaffLoading } = useStaffAuth();
   const [showSplash, setShowSplash] = useState(true);
 
-  const isLoading = isConsignorLoading || isTransporterLoading;
+  const isLoading = isConsignorLoading || isTransporterLoading || isStaffLoading;
 
   useEffect(() => {
     // Only show splash on first mount
@@ -74,6 +80,13 @@ function AppNavigator() {
           // Transporter Dashboard
           <>
             <Stack.Screen name="TransporterDashboard" component={TransporterDashboardLayout} />
+            <Stack.Screen name="TransporterBiltyDetails" component={TransporterBiltyDetails} />
+          </>
+        ) : isStaffLoggedIn ? (
+          // Staff Dashboard
+          <>
+            <Stack.Screen name="StaffDashboard" component={StaffDashboardLayout} />
+            <Stack.Screen name="StaffBiltyDetails" component={StaffBiltyDetails} />
           </>
         ) : (
           // Auth Screens
@@ -81,6 +94,7 @@ function AppNavigator() {
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="TransporterLogin" component={TransporterLoginScreen} />
+            <Stack.Screen name="StaffLogin" component={StaffLoginScreen} />
           </>
         )}
       </Stack.Navigator>
@@ -92,7 +106,9 @@ export function NavigationManager() {
   return (
     <AuthProvider>
       <TransporterAuthProvider>
-        <AppNavigator />
+        <StaffAuthProvider>
+          <AppNavigator />
+        </StaffAuthProvider>
       </TransporterAuthProvider>
     </AuthProvider>
   );

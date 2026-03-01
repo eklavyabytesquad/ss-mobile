@@ -100,6 +100,14 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.transporterLoginText}>🚛 Transporter Login</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.staffLoginButton}
+          onPress={() => navigation.navigate('StaffLogin')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.staffLoginText}>👨‍💼 Staff Login</Text>
+        </TouchableOpacity>
+
         <Text style={styles.footerText}>
           By continuing, you agree to our Terms & Privacy Policy
         </Text>

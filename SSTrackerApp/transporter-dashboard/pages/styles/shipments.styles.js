@@ -222,8 +222,48 @@ export default StyleSheet.create({
     paddingTop: 12,
     marginTop: 12,
   },
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   dateText: {
     fontSize: 13,
     color: '#6b7280',
+  },
+  amountText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  loadMoreButton: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#2563eb',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadMoreContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadMoreText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#2563eb',
+  },
+  endOfList: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  endOfListText: {
+    fontSize: 13,
+    color: '#9ca3af',
+    fontWeight: '500',
   },
 });

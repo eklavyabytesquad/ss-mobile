@@ -107,6 +107,20 @@ export default StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.5,
   },
+  staffLoginButton: {
+    backgroundColor: '#fffbeb',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fde68a',
+  },
+  staffLoginText: {
+    color: '#b45309',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
   footerText: {
     textAlign: 'center',
     fontSize: 11,

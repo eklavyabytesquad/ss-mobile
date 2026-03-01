@@ -178,14 +178,79 @@ export default StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  routeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  routePoint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  routeIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  routeLabel: {
+    fontSize: 10,
+    color: '#9ca3af',
+    fontWeight: '500',
+  },
+  routeValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  routeDivider: {
+    paddingHorizontal: 8,
+  },
+  routeArrow: {
+    fontSize: 16,
+    color: '#2563eb',
+  },
+  partiesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  partyItem: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  partyLabel: {
+    fontSize: 10,
+    color: '#9ca3af',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  partyValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+  },
   shipmentFooter: {
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6',
     paddingTop: 12,
     marginTop: 12,
   },
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   dateText: {
     fontSize: 13,
     color: '#6b7280',
+  },
+  amountText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#059669',
   },
 });

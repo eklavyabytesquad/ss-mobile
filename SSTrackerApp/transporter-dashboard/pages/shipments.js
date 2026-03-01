@@ -5,51 +5,121 @@ import { useTransporterAuth } from '../../context/TransporterAuthContext';
 import supabase from '../../utils/supabase';
 import styles from './styles/shipments.styles';
 
-export default function TransporterShipments() {
-  const { user } = useTransporterAuth();
+const PAGE_SIZE = 20;
+
+export default function TransporterShipments({ navigation }) {
+  const { user, sessionToken } = useTransporterAuth();
   const [shipments, setShipments] = useState([]);
   const [filteredShipments, setFilteredShipments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [hasMore, setHasMore] = useState(true);
+  const [userGstCached, setUserGstCached] = useState(null);
 
   useEffect(() => {
-    if (user) {
-      loadShipments();
+    if (user && sessionToken) {
+      loadShipments(true);
     }
-  }, [user]);
+  }, [user, sessionToken]);
 
   useEffect(() => {
     filterShipments();
   }, [searchQuery, activeFilter, shipments]);
 
-  const loadShipments = async () => {
-    setIsLoading(true);
+  const getGst = async () => {
+    if (userGstCached) return userGstCached;
+
+    const { data: session, error: sessionError } = await supabase
+      .from('transport_sessions')
+      .select('transport_id')
+      .eq('session_token', sessionToken)
+      .eq('is_active', true)
+      .single();
+
+    if (sessionError || !session?.transport_id) return null;
+
+    const { data: myTransport, error: myTransportError } = await supabase
+      .from('transports')
+      .select('gst_number')
+      .eq('id', session.transport_id)
+      .single();
+
+    if (myTransportError || !myTransport?.gst_number) return null;
+
+    const gst = myTransport.gst_number.trim().toUpperCase();
+    setUserGstCached(gst);
+    return gst;
+  };
+
+  const enrichWithCities = async (bilties) => {
+    const cityIds = [...new Set([...bilties.map(b => b.from_city_id), ...bilties.map(b => b.to_city_id)].filter(Boolean))];
+    let cityMap = {};
+    if (cityIds.length > 0) {
+      const { data: cities } = await supabase
+        .from('cities')
+        .select('id, city_name')
+        .in('id', cityIds);
+      if (cities) {
+        cities.forEach(c => { cityMap[c.id] = c.city_name; });
+      }
+    }
+    return bilties.map(b => ({
+      ...b,
+      from_city_name: cityMap[b.from_city_id] || '-',
+      to_city_name: cityMap[b.to_city_id] || '-',
+    }));
+  };
+
+  const loadShipments = async (initial = false) => {
+    if (initial) {
+      setIsLoading(true);
+      setShipments([]);
+      setHasMore(true);
+    } else {
+      setLoadingMore(true);
+    }
+
     try {
+      const userGst = await getGst();
+      if (!userGst) {
+        setShipments([]);
+        setFilteredShipments([]);
+        setIsLoading(false);
+        setLoadingMore(false);
+        return;
+      }
+
+      const offset = initial ? 0 : shipments.length;
+
       const { data, error } = await supabase
         .from('bilty')
-        .select(`
-          id, 
-          gr_no, 
-          saving_option, 
-          created_at,
-          consignor:consignor_id(company_name),
-          consignee:consignee_id(company_name),
-          from_city:from_city_id(city_name),
-          to_city:to_city_id(city_name)
-        `)
-        .eq('transport_id', user.id)
-        .order('created_at', { ascending: false });
+        .select('id, gr_no, saving_option, created_at, bilty_date, consignor_name, consignee_name, from_city_id, to_city_id, no_of_pkg, total, payment_mode, freight_amount, transport_gst')
+        .ilike('transport_gst', userGst)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + PAGE_SIZE - 1);
 
       if (!error && data) {
-        setShipments(data);
-        setFilteredShipments(data);
+        const enriched = await enrichWithCities(data);
+
+        if (initial) {
+          setShipments(enriched);
+        } else {
+          setShipments(prev => [...prev, ...enriched]);
+        }
+
+        setHasMore(data.length === PAGE_SIZE);
+      } else {
+        setHasMore(false);
       }
     } catch (error) {
       console.error('Load shipments error:', error);
     } finally {
       setIsLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -71,8 +141,8 @@ export default function TransporterShipments() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(s => 
         s.gr_no?.toLowerCase().includes(query) ||
-        s.consignor?.company_name?.toLowerCase().includes(query) ||
-        s.consignee?.company_name?.toLowerCase().includes(query)
+        s.consignor_name?.toLowerCase().includes(query) ||
+        s.consignee_name?.toLowerCase().includes(query)
       );
     }
 
@@ -81,8 +151,15 @@ export default function TransporterShipments() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadShipments();
+    setUserGstCached(null);
+    await loadShipments(true);
     setRefreshing(false);
+  };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadShipments(false);
+    }
   };
 
   const getStatusStyle = (status) => {
@@ -193,7 +270,8 @@ export default function TransporterShipments() {
           filteredShipments.map((shipment, index) => {
             const statusStyle = getStatusStyle(shipment.saving_option);
             return (
-              <View key={index} style={styles.shipmentCard}>
+              <TouchableOpacity key={index} activeOpacity={0.7} onPress={() => navigation.navigate('TransporterBiltyDetails', { biltyId: shipment.id, grNo: shipment.gr_no })}>
+              <View style={styles.shipmentCard}>
                 <View style={styles.shipmentHeader}>
                   <View style={styles.grNoContainer}>
                     <Text style={styles.grNoLabel}>GR No.</Text>
@@ -209,7 +287,7 @@ export default function TransporterShipments() {
                     <Text style={styles.routeIcon}>📤</Text>
                     <View>
                       <Text style={styles.routeLabel}>From</Text>
-                      <Text style={styles.routeValue}>{shipment.from_city?.city_name || '-'}</Text>
+                      <Text style={styles.routeValue}>{shipment.from_city_name || '-'}</Text>
                     </View>
                   </View>
                   <View style={styles.routeDivider}>
@@ -219,7 +297,7 @@ export default function TransporterShipments() {
                     <Text style={styles.routeIcon}>📥</Text>
                     <View>
                       <Text style={styles.routeLabel}>To</Text>
-                      <Text style={styles.routeValue}>{shipment.to_city?.city_name || '-'}</Text>
+                      <Text style={styles.routeValue}>{shipment.to_city_name || '-'}</Text>
                     </View>
                   </View>
                 </View>
@@ -227,20 +305,54 @@ export default function TransporterShipments() {
                 <View style={styles.partiesContainer}>
                   <View style={styles.partyItem}>
                     <Text style={styles.partyLabel}>Consignor</Text>
-                    <Text style={styles.partyValue} numberOfLines={1}>{shipment.consignor?.company_name || '-'}</Text>
+                    <Text style={styles.partyValue} numberOfLines={1}>{shipment.consignor_name || '-'}</Text>
                   </View>
                   <View style={styles.partyItem}>
                     <Text style={styles.partyLabel}>Consignee</Text>
-                    <Text style={styles.partyValue} numberOfLines={1}>{shipment.consignee?.company_name || '-'}</Text>
+                    <Text style={styles.partyValue} numberOfLines={1}>{shipment.consignee_name || '-'}</Text>
                   </View>
                 </View>
 
                 <View style={styles.shipmentFooter}>
-                  <Text style={styles.dateText}>📅 {formatDate(shipment.created_at)}</Text>
+                  <View style={styles.footerRow}>
+                    <Text style={styles.dateText}>📅 {formatDate(shipment.bilty_date || shipment.created_at)}</Text>
+                    {shipment.total > 0 && (
+                      <Text style={styles.amountText}>₹{Number(shipment.total).toLocaleString('en-IN')}</Text>
+                    )}
+                  </View>
                 </View>
               </View>
+              </TouchableOpacity>
             );
           })
+        )}
+
+        {/* Load More Button */}
+        {filteredShipments.length > 0 && hasMore && !searchQuery && activeFilter === 'all' && (
+          <TouchableOpacity
+            style={styles.loadMoreButton}
+            onPress={handleLoadMore}
+            disabled={loadingMore}
+            activeOpacity={0.7}
+          >
+            {loadingMore ? (
+              <View style={styles.loadMoreContent}>
+                <ActivityIndicator size="small" color="#2563eb" />
+                <Text style={styles.loadMoreText}>Loading...</Text>
+              </View>
+            ) : (
+              <View style={styles.loadMoreContent}>
+                <Text style={{ fontSize: 16, marginRight: 8 }}>📦</Text>
+                <Text style={styles.loadMoreText}>Load More Shipments</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {filteredShipments.length > 0 && !hasMore && (
+          <View style={styles.endOfList}>
+            <Text style={styles.endOfListText}>— All shipments loaded —</Text>
+          </View>
         )}
 
         {/* Bottom Spacing */}

@@ -1,0 +1,112 @@
+import { StyleSheet } from 'react-native';
+
+export default StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+  },
+  header: {
+    paddingTop: 48,
+    paddingBottom: 28,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    alignItems: 'center',
+  },
+  avatarSection: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  avatarCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  userRole: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '500',
+    marginTop: 3,
+    textAlign: 'center',
+  },
+  detailsContainer: {
+    marginTop: 18,
+    paddingHorizontal: 16,
+  },
+  sectionHeader: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748b',
+    marginBottom: 10,
+    marginTop: 18,
+    letterSpacing: 0.3,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 8,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+  },
+  detailLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  detailIcon: {
+    fontSize: 16,
+    marginRight: 10,
+  },
+  detailLabel: {
+    fontSize: 10,
+    color: '#94a3b8',
+    fontWeight: '500',
+    letterSpacing: 0.3,
+  },
+  detailValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginTop: 1,
+  },
+  logoutSection: {
+    paddingHorizontal: 16,
+    marginTop: 24,
+    marginBottom: 40,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  logoutIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  logoutText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#dc2626',
+  },
+});
