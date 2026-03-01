@@ -176,18 +176,18 @@ export default function DashboardHistory() {
                       <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 16 }}>
                         <Text style={{ fontSize: 12, color: Colors.textSecondary }}>📦 {shipment.no_of_pkg || 0} Pkg</Text>
                       </View>
-                      {shipment.wt && (
+                      {shipment.wt ? (
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                           <Text style={{ fontSize: 12, color: Colors.textSecondary }}>⚖️ {shipment.wt} Kg</Text>
                         </View>
-                      )}
+                      ) : null}
                     </View>
                     <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.primary }}>
                       ₹{shipment.total || 0}
                     </Text>
                   </View>
 
-                  {shipment.consignee_name && (
+                  {shipment.consignee_name ? (
                     <View style={{ marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f0f0f0' }}>
                       <Text style={{ fontSize: 12, color: Colors.textSecondary }}>
                         Consignee: 
@@ -196,7 +196,7 @@ export default function DashboardHistory() {
                         {shipment.consignee_name}
                       </Text>
                     </View>
-                  )}
+                  ) : null}
                 </TouchableOpacity>
               );
             })

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, StatusBar } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView, Image, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStaffAuth } from '../context/StaffAuthContext';
 import { checkStaffByPhone, requestStaffOTP, verifyStaffOTP } from '../utils/staffAuthService';
@@ -123,27 +123,30 @@ export default function StaffLoginScreen({ navigation }) {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle="light-content" backgroundColor="#b45309" />
+      <StatusBar barStyle="light-content" backgroundColor="#1e293b" />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
         <LinearGradient
-          colors={['#f59e0b', '#d97706', '#b45309']}
+          colors={['#475569', '#334155', '#1e293b']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.header}
         >
           <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-            <Text style={styles.backButtonText}>←</Text>
+            <View style={styles.backArrow} />
           </TouchableOpacity>
 
           <View style={styles.logoContainer}>
             <View style={styles.logoBackground}>
-              <Text style={styles.logoIcon}>👨‍💼</Text>
+              <Image
+                source={require('../assets/images/logo.png')}
+                style={styles.headerLogo}
+                resizeMode="contain"
+              />
             </View>
             <Text style={styles.appTitle}>Staff Portal</Text>
             <Text style={styles.tagline}>SS Transport Team</Text>
@@ -243,7 +246,7 @@ export default function StaffLoginScreen({ navigation }) {
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={['#f59e0b', '#d97706']}
+                colors={['#475569', '#334155']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.buttonGradient}

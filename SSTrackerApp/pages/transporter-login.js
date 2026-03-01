@@ -163,16 +163,15 @@ export default function TransporterLoginScreen({ navigation }) {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
+      <StatusBar barStyle="light-content" backgroundColor="#1e293b" />
       <ScrollView 
         style={styles.container}
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header with gradient background */}
         <LinearGradient
-          colors={['#2563eb', '#1d4ed8', '#1e40af']}
+          colors={['#334155', '#1e293b', '#0f172a']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.header}
@@ -181,13 +180,16 @@ export default function TransporterLoginScreen({ navigation }) {
             style={styles.backButton}
             onPress={handleGoBack}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <View style={styles.backArrow} />
           </TouchableOpacity>
 
-          {/* Logo */}
           <View style={styles.logoContainer}>
             <View style={styles.logoBackground}>
-              <Text style={styles.logoIcon}>🚛</Text>
+              <Image
+                source={require('../assets/images/logo.png')}
+                style={styles.headerLogo}
+                resizeMode="contain"
+              />
             </View>
             <Text style={styles.appTitle}>Transporter Portal</Text>
             <Text style={styles.tagline}>SS Transport Network</Text>
@@ -307,7 +309,7 @@ export default function TransporterLoginScreen({ navigation }) {
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={['#2563eb', '#1d4ed8']}
+                colors={['#334155', '#1e293b']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.buttonGradient}

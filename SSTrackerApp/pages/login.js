@@ -91,7 +91,7 @@ export default function LoginScreen({ navigation }) {
       >
         {/* Header with gradient background */}
         <LinearGradient
-          colors={[Colors.primary, '#b8922e', Colors.primary]}
+          colors={['#d4ac40', '#c99b31', '#b8922e']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.header}
@@ -100,7 +100,7 @@ export default function LoginScreen({ navigation }) {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>←</Text>
+            <View style={styles.backArrow} />
           </TouchableOpacity>
 
           {/* Logo */}
@@ -220,15 +220,7 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.securityText}>Secure Login • End-to-End Encrypted</Text>
             </View>
 
-            {/* Transporter Login Button */}
-            <TouchableOpacity 
-              style={styles.transporterButton}
-              onPress={() => navigation.navigate('TransporterLogin')}
-            >
-              <Text style={styles.transporterIcon}>🚛</Text>
-              <Text style={styles.transporterText}>Login as Transporter</Text>
-              <Text style={styles.transporterArrow}>→</Text>
-            </TouchableOpacity>
+            <Text style={styles.poweredBy}>Powered by movesure.io</Text>
           </View>
         </View>
       </ScrollView>

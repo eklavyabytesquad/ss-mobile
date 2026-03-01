@@ -11,6 +11,7 @@ import HomeScreen from '../pages/index';
 import LoginScreen from '../pages/login';
 import TransporterLoginScreen from '../pages/transporter-login';
 import StaffLoginScreen from '../pages/staff-login';
+import MasterLoginScreen from '../pages/master';
 import DashboardLayout from '../dashboard/_layout';
 import TransporterDashboardLayout from '../transporter-dashboard/_layout';
 import StaffDashboardLayout from '../staff-dashboard/_layout';
@@ -93,6 +94,7 @@ function AppNavigator() {
           <>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="MasterLogin" component={MasterLoginScreen} />
             <Stack.Screen name="TransporterLogin" component={TransporterLoginScreen} />
             <Stack.Screen name="StaffLogin" component={StaffLoginScreen} />
           </>
