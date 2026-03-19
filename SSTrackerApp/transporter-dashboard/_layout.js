@@ -5,6 +5,7 @@ import { Image, Text, View } from 'react-native';
 import TransporterHome from './pages/home';
 import TransporterProfile from './pages/profile';
 import TransporterShipments from './pages/shipments';
+import TransporterPohonch from './pages/pohonch';
 
 const Tab = createBottomTabNavigator();
 
@@ -65,6 +66,22 @@ export default function TransporterDashboardLayout() {
               borderRadius: 12,
             }}>
               <Text style={{ fontSize: 22 }}>📦</Text>
+            </View>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="TransporterPohonch"
+        component={TransporterPohonch}
+        options={{
+          title: 'Pohonch',
+          tabBarIcon: ({ focused }) => (
+            <View style={{
+              backgroundColor: focused ? '#dbeafe' : 'transparent',
+              padding: 8,
+              borderRadius: 12,
+            }}>
+              <Text style={{ fontSize: 22 }}>📋</Text>
             </View>
           ),
         }}

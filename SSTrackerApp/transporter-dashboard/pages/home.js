@@ -41,10 +41,10 @@ export default function TransporterHome({ navigation }) {
         return;
       }
 
-      // Step 2: Get GST number from transports table using transport_id
+      // Step 2: Get GST number and city_id from transports table
       const { data: myTransport, error: myTransportError } = await supabase
         .from('transports')
-        .select('gst_number')
+        .select('gst_number, city_id')
         .eq('id', session.transport_id)
         .single();
 
@@ -55,54 +55,131 @@ export default function TransporterHome({ navigation }) {
         return;
       }
 
+      const transportId = session.transport_id;
       const userGst = myTransport.gst_number.trim().toUpperCase();
 
-      // Step 3a: Get total count for stats (lightweight - only ids + status)
-      const { data: allStatuses, error: statsError } = await supabase
+      // Get city_code for station matching
+      let cityCode = null;
+      if (myTransport.city_id) {
+        const { data: cityData } = await supabase
+          .from('cities')
+          .select('city_code')
+          .eq('id', myTransport.city_id)
+          .single();
+        if (cityData) cityCode = cityData.city_code;
+      }
+      const stationOrParts = [`transport_id.eq.${transportId}`, `transport_gst.ilike.${userGst}`];
+      if (cityCode) stationOrParts.push(`station.ilike.${cityCode}`);
+      const stationOrFilter = stationOrParts.join(',');
+
+      // Step 3a: Get stats from bilty table
+      const { data: biltyStatuses } = await supabase
         .from('bilty')
         .select('id, saving_option')
         .ilike('transport_gst', userGst)
         .eq('is_active', true);
 
-      if (!statsError && allStatuses) {
-        const total = allStatuses.length;
-        const inTransit = allStatuses.filter(b => b.saving_option === 'IN_TRANSIT' || b.saving_option === 'SAVE').length;
-        const delivered = allStatuses.filter(b => b.saving_option === 'DELIVERED').length;
-        const atHub = allStatuses.filter(b => b.saving_option === 'AT_HUB').length;
-        setStats({ totalBilties: total, inTransit, delivered, atHub });
-      }
+      // Step 3b: Get stats from station_bilty_summary table
+      const { data: stationBilties } = await supabase
+        .from('station_bilty_summary')
+        .select('id')
+        .or(stationOrFilter);
 
-      // Step 3b: Fetch only recent 5 bilties for display
-      const { data: recentBilties, error: recentError } = await supabase
+      const biltyCount = biltyStatuses?.length || 0;
+      const stationCount = stationBilties?.length || 0;
+      let inTransit = 0, delivered = 0, atHub = 0;
+      if (biltyStatuses) {
+        inTransit = biltyStatuses.filter(b => b.saving_option === 'IN_TRANSIT' || b.saving_option === 'SAVE').length;
+        delivered = biltyStatuses.filter(b => b.saving_option === 'DELIVERED').length;
+        atHub = biltyStatuses.filter(b => b.saving_option === 'AT_HUB').length;
+      }
+      setStats({ totalBilties: biltyCount + stationCount, inTransit, delivered, atHub });
+
+      // Step 4: Fetch recent bilties from BOTH tables
+      const { data: recentBilties } = await supabase
         .from('bilty')
-        .select('id, gr_no, saving_option, created_at, bilty_date, consignor_name, consignee_name, from_city_id, to_city_id, no_of_pkg, total, payment_mode, transport_gst')
+        .select('id, gr_no, saving_option, created_at, to_city_id, total, payment_mode, pvt_marks, dd_charge, wt, no_of_pkg')
         .ilike('transport_gst', userGst)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (!recentError && recentBilties) {
-        // Fetch city names
-        const cityIds = [...new Set([...recentBilties.map(b => b.from_city_id), ...recentBilties.map(b => b.to_city_id)].filter(Boolean))];
+      const { data: recentStationBilties } = await supabase
+        .from('station_bilty_summary')
+        .select('id, gr_no, station, amount, payment_status, pvt_marks, created_at, weight, no_of_packets')
+        .or(stationOrFilter)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // Enrich bilty items with city names
+      let biltyItems = [];
+      if (recentBilties?.length) {
+        const cityIds = [...new Set(recentBilties.map(b => b.to_city_id).filter(Boolean))];
         let cityMap = {};
         if (cityIds.length > 0) {
-          const { data: cities } = await supabase
-            .from('cities')
-            .select('id, city_name')
-            .in('id', cityIds);
-          if (cities) {
-            cities.forEach(c => { cityMap[c.id] = c.city_name; });
-          }
+          const { data: cities } = await supabase.from('cities').select('id, city_name').in('id', cityIds);
+          if (cities) cities.forEach(c => { cityMap[c.id] = c.city_name; });
         }
-
-        const biltiesWithCities = recentBilties.map(b => ({
-          ...b,
-          from_city_name: cityMap[b.from_city_id] || '-',
-          to_city_name: cityMap[b.to_city_id] || '-',
+        biltyItems = recentBilties.map(b => ({
+          id: b.id, gr_no: b.gr_no, source: 'bilty',
+          destination: cityMap[b.to_city_id] || '-',
+          pvt_marks: b.pvt_marks, payment_mode: b.payment_mode || '-',
+          amount: b.total || 0, dd_charge: b.dd_charge || 0,
+          saving_option: b.saving_option, created_at: b.created_at,
+          weight: b.wt || 0, no_of_packets: b.no_of_pkg || 0,
         }));
-
-        setRecentShipments(biltiesWithCities);
       }
+
+      // Normalize station_bilty_summary: map station (city_code) -> city_name
+      let stationItems = [];
+      if (recentStationBilties?.length) {
+        const stationCodes = [...new Set(recentStationBilties.map(b => b.station).filter(Boolean))];
+        let stationCityMap = {};
+        if (stationCodes.length > 0) {
+          const { data: sCities } = await supabase.from('cities').select('city_code, city_name').in('city_code', stationCodes);
+          if (sCities) sCities.forEach(c => { stationCityMap[c.city_code] = c.city_name; });
+        }
+        stationItems = recentStationBilties.map(b => ({
+          id: b.id, gr_no: b.gr_no, source: 'station',
+          destination: stationCityMap[b.station] || b.station || '-',
+          pvt_marks: b.pvt_marks, payment_mode: b.payment_status || '-',
+          amount: b.amount || 0, dd_charge: 0,
+          saving_option: null, created_at: b.created_at,
+          weight: b.weight || 0, no_of_packets: b.no_of_packets || 0,
+        }));
+      }
+
+      // Merge, sort, take top 5
+      const merged = [...biltyItems, ...stationItems]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5);
+
+      // Fetch challan_no from transit_details
+      const grNos = merged.map(b => b.gr_no).filter(Boolean);
+      let challanMap = {};
+      if (grNos.length > 0) {
+        const { data: transitData } = await supabase
+          .from('transit_details')
+          .select('gr_no, challan_no')
+          .in('gr_no', grNos);
+        if (transitData) transitData.forEach(t => { challanMap[t.gr_no] = t.challan_no; });
+      }
+
+      // Fetch dispatch_date from challan_details
+      const challanNos = [...new Set(Object.values(challanMap).filter(Boolean))];
+      let dispatchMap = {};
+      if (challanNos.length > 0) {
+        const { data: challanData } = await supabase
+          .from('challan_details')
+          .select('challan_no, dispatch_date')
+          .in('challan_no', challanNos);
+        if (challanData) challanData.forEach(c => { dispatchMap[c.challan_no] = c.dispatch_date; });
+      }
+
+      setRecentShipments(merged.map(b => {
+        const cNo = challanMap[b.gr_no] || '-';
+        return { ...b, challan_no: cNo, dispatch_date: cNo !== '-' ? (dispatchMap[cNo] || null) : null };
+      }));
     } catch (error) {
       console.error('Dashboard load error:', error);
     } finally {
@@ -129,12 +206,14 @@ export default function TransporterHome({ navigation }) {
       case 'IN_TRANSIT': 
       case 'SAVE': return { bg: '#dbeafe', color: '#1e40af', text: 'In Transit' };
       case 'AT_HUB': return { bg: '#fef3c7', color: '#92400e', text: 'At Hub' };
+      case null:
+      case undefined: return { bg: '#e0e7ff', color: '#4338ca', text: 'Manual' };
       default: return { bg: '#f3f4f6', color: '#6b7280', text: 'Pending' };
     }
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return '';
+    if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   };
@@ -210,58 +289,62 @@ export default function TransporterHome({ navigation }) {
             recentShipments.map((shipment, index) => {
               const statusStyle = getStatusStyle(shipment.saving_option);
               return (
-                <TouchableOpacity key={index} activeOpacity={0.7} onPress={() => navigation.navigate('TransporterBiltyDetails', { biltyId: shipment.id, grNo: shipment.gr_no })}>
+                <TouchableOpacity key={index} activeOpacity={0.7} onPress={() => navigation.navigate('TransporterBiltyDetails', { biltyId: shipment.id, grNo: shipment.gr_no, source: shipment.source })}>
                 <View style={styles.shipmentCard}>
                   <View style={styles.shipmentHeader}>
-                    <View style={styles.grNoContainer}>
-                      <Text style={styles.grNoLabel}>GR No.</Text>
-                      <Text style={styles.grNoValue}>{shipment.gr_no}</Text>
-                    </View>
+                    <Text style={styles.grNoValue}>{shipment.gr_no}</Text>
                     <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
                       <Text style={[styles.statusText, { color: statusStyle.color }]}>{statusStyle.text}</Text>
                     </View>
                   </View>
 
-                  {/* Route */}
-                  <View style={styles.routeContainer}>
-                    <View style={styles.routePoint}>
-                      <Text style={styles.routeIcon}>📤</Text>
-                      <View>
-                        <Text style={styles.routeLabel}>From</Text>
-                        <Text style={styles.routeValue}>{shipment.from_city_name || '-'}</Text>
-                      </View>
+                  <View style={styles.cardRow}>
+                    <View style={styles.cardField}>
+                      <Text style={styles.fieldLabel}>Destination</Text>
+                      <Text style={styles.fieldValue} numberOfLines={1}>{shipment.destination}</Text>
                     </View>
-                    <View style={styles.routeDivider}>
-                      <Text style={styles.routeArrow}>→</Text>
+                    <View style={styles.cardField}>
+                      <Text style={styles.fieldLabel}>Challan No</Text>
+                      <Text style={styles.fieldValue}>{shipment.challan_no}</Text>
                     </View>
-                    <View style={styles.routePoint}>
-                      <Text style={styles.routeIcon}>📥</Text>
-                      <View>
-                        <Text style={styles.routeLabel}>To</Text>
-                        <Text style={styles.routeValue}>{shipment.to_city_name || '-'}</Text>
-                      </View>
+                    <View style={styles.cardField}>
+                      <Text style={styles.fieldLabel}>Dispatched</Text>
+                      <Text style={styles.fieldValue}>{formatDate(shipment.dispatch_date)}</Text>
                     </View>
                   </View>
 
-                  {/* Parties */}
-                  <View style={styles.partiesContainer}>
-                    <View style={styles.partyItem}>
-                      <Text style={styles.partyLabel}>Consignor</Text>
-                      <Text style={styles.partyValue} numberOfLines={1}>{shipment.consignor_name || '-'}</Text>
+                  {shipment.pvt_marks ? (
+                    <View style={styles.pvtRow}>
+                      <Text style={styles.fieldLabel}>Pvt Marks</Text>
+                      <Text style={styles.fieldValue} numberOfLines={1}>{shipment.pvt_marks}</Text>
                     </View>
-                    <View style={styles.partyItem}>
-                      <Text style={styles.partyLabel}>Consignee</Text>
-                      <Text style={styles.partyValue} numberOfLines={1}>{shipment.consignee_name || '-'}</Text>
+                  ) : null}
+
+                  <View style={styles.cardRow}>
+                    <View style={styles.cardField}>
+                      <Text style={styles.fieldLabel}>Weight</Text>
+                      <Text style={styles.fieldValue}>{shipment.weight} kg</Text>
+                    </View>
+                    <View style={styles.cardField}>
+                      <Text style={styles.fieldLabel}>Packets</Text>
+                      <Text style={styles.fieldValue}>{shipment.no_of_packets}</Text>
+                    </View>
+                    <View style={styles.cardField}>
+                      <Text style={styles.fieldLabel}>Payment</Text>
+                      <Text style={styles.fieldValueBold}>{shipment.payment_mode || '-'}</Text>
                     </View>
                   </View>
 
-                  <View style={styles.shipmentFooter}>
-                    <View style={styles.footerRow}>
-                      <Text style={styles.dateText}>📅 {formatDate(shipment.bilty_date || shipment.created_at)}</Text>
-                      {shipment.total > 0 && (
-                        <Text style={styles.amountText}>₹{Number(shipment.total).toLocaleString('en-IN')}</Text>
-                      )}
+                  <View style={styles.cardRow}>
+                    <View style={styles.cardField}>
+                      <Text style={styles.fieldLabel}>Amount</Text>
+                      <Text style={styles.amountText}>₹{Number(shipment.amount || 0).toLocaleString('en-IN')}</Text>
                     </View>
+                    <View style={styles.cardField}>
+                      <Text style={styles.fieldLabel}>DD</Text>
+                      <Text style={styles.fieldValue}>₹{Number(shipment.dd_charge || 0).toLocaleString('en-IN')}</Text>
+                    </View>
+                    <View style={styles.cardField} />
                   </View>
                 </View>
                 </TouchableOpacity>
